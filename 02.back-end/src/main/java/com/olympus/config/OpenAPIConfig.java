@@ -46,7 +46,7 @@ public class OpenAPIConfig {
                 .title("Olympus Social Network")
                 .version("1.0")
                 .contact(contact)
-                .description("This API exposes to manage demo project only")
+                .description("This API exposes to manage project demo only")
                 .termsOfService("Luvina.net/terms")
                 .license(mitLicense);
 

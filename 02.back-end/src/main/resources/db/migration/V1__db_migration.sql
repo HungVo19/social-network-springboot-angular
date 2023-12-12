@@ -1,74 +1,60 @@
-CREATE TABLE IF NOT EXISTS `role`
-(
-    `role_id` BIGINT      NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `name`    VARCHAR(20) NOT NULL
-) ENGINE = InnoDB
-  DEFAULT CHARSET = UTF8mb4;
-
-CREATE TABLE IF NOT EXISTS `gender`
-(
-    `gender_id` BIGINT      NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `gender`    VARCHAR(50) NOT NULL
-) ENGINE = InnoDB
-  DEFAULT CHARSET = UTF8mb4;
-
-CREATE TABLE IF NOT EXISTS `status`
-(
-    `status_id` BIGINT      NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `status`    VARCHAR(50) NOT NULL
-) ENGINE = InnoDB
-  DEFAULT CHARSET = UTF8mb4;
-
 CREATE TABLE IF NOT EXISTS `user`
 (
-    `user_id`         BIGINT       NOT NUll AUTO_INCREMENT PRIMARY KEY,
-    `email`           VARCHAR(100) NOT NULL UNIQUE,
-    `password`        LONGTEXT     NOT NULL,
+    `user_id`         BIGINT                                                               NOT NUll AUTO_INCREMENT PRIMARY KEY,
+    `email`           VARCHAR(100)                                                         NOT NULL UNIQUE,
+    `password`        LONGTEXT                                                             NOT NULL,
     `avatar`          LONGTEXT,
     `first_name`      VARCHAR(20),
     `last_name`       VARCHAR(20),
-    `birthdate`       VARCHAR(10),
+    `birthdate`       DATE,
     `phone_number`    VARCHAR(20),
     `current_address` LONGTEXT,
-    `delete_status`   BOOLEAN,
-    `gender_id`       BIGINT,
-    `status_id`       BIGINT,
-    `role_id`         BIGINT       NOT NULL,
-    FOREIGN KEY (`role_id`) REFERENCES role (`role_id`),
-    FOREIGN KEY (`status_id`) REFERENCES status (`status_id`),
-    FOREIGN KEY (`gender_id`) REFERENCES gender (`gender_id`)
+    `occupation`      LONGTEXT,
+    `delete_status`   BOOLEAN                                          DEFAULT (false),
+    `gender`          ENUM ('MALE','FEMALE','RATHER_NOT_TO_SAY')       DEFAULT 'RATHER_NOT_TO_SAY',
+    `status`          ENUM ('MARRIED','SINGLE','RATHER_NOT_TO_SAY')    DEFAULT 'RATHER_NOT_TO_SAY',
+    `role`            ENUM ('ROLE_ADMIN','ROLE_MODERATOR','ROLE_USER') DEFAULT 'ROLE_USER' NOT NULL
 ) ENGINE = InnoDB
   DEFAULT CHARSET = UTF8mb4;
 
 CREATE TABLE IF NOT EXISTS `authentication`
 (
-    `code_id` BIGINT   NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `user_id` BIGINT   NOT NULL UNIQUE,
-    `code`    LONGTEXT NOT NULL,
+    `code_id`      BIGINT   NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `user_id`      BIGINT   NOT NULL UNIQUE,
+    `code`         LONGTEXT NOT NULL,
+    `created_time` DATETIME NOT NULL,
     FOREIGN KEY (`user_id`) REFERENCES user (`user_id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = UTF8mb4;
 
 CREATE TABLE IF NOT EXISTS `reset_password`
 (
-    `reset_id` BIGINT   NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `user_id`  BIGINT   NOT NULL UNIQUE,
-    `token`    LONGTEXT NOT NULL UNIQUE,
+    `reset_id`     BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `user_id`      BIGINT       NOT NULL UNIQUE,
+    `token`        VARCHAR(255) NOT NULL UNIQUE,
+    `created_time` DATETIME     NOT NULL,
     FOREIGN KEY (`user_id`) REFERENCES user (`user_id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = UTF8mb4;
 
-INSERT INTO `role` (`name`)
-values ('ROLE_ADMIN'),
-       ('ROLE_MODERATOR'),
-       ('ROLE_USER');
-INSERT INTO `gender` (`gender`)
-values ('MALE'),
-       ('FEMALE'),
-       ('RATHER NOT TO SAY');
-INSERT INTO `status` (`status`)
-values ('MARRIED'),
-       ('SINGLE'),
-       ('RATHER NOT TO SAY');
+CREATE TABLE IF NOT EXISTS `post`
+(
+    `post_id`       BIGINT   NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `user_id`       BIGINT   NOT NULL,
+    `content`       LONGTEXT NOT NULL,
+    `delete_status` BOOLEAN  NOT NULL                   DEFAULT (false),
+    `privacy`       ENUM ('PRIVATE','FRIENDS','PUBLIC') DEFAULT 'PUBLIC' NOT NULL,
+    `created_time`  DATETIME NOT NULL,
+    `updated_time`  DATETIME NOT NULL,
+    FOREIGN KEY (`user_id`) REFERENCES user (`user_id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = UTF8mb4;
 
-
+CREATE TABLE IF NOT EXISTS `post_image`
+(
+    `image_id` BIGINT   NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `url`      LONGTEXT NOT NULL,
+    `post_id`  BIGINT   NOT NULL,
+    FOREIGN KEY (`post_id`) REFERENCES post (`post_id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = UTF8mb4;

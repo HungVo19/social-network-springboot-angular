@@ -3,6 +3,8 @@ package com.olympus.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDate;
+
 @Entity
 @Data
 @Table(name = "user")
@@ -28,7 +30,7 @@ public class User {
     private String lastName;
 
     @Column(name = "birthdate")
-    private String birthdate;
+    private LocalDate birthDate;
 
     @Column(name = "phone_number")
     private String phoneNumber;
@@ -36,18 +38,21 @@ public class User {
     @Column(name = "current_address")
     private String currentAddress;
 
+    @Column(name = "occupation")
+    private String occupation;
+
     @Column(name = "delete_status")
     private boolean deleteStatus;
 
-    @ManyToOne(targetEntity = Gender.class)
-    @JoinColumn(name = "gender_id")
+    @Column(name = "gender")
+    @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    @ManyToOne(targetEntity = Status.class)
-    @JoinColumn(name = "status_id")
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private Status status;
 
-    @ManyToOne(targetEntity = Role.class)
-    @JoinColumn(name = "role_id")
+    @Column(name = "role")
+    @Enumerated(EnumType.STRING)
     private Role role;
 }

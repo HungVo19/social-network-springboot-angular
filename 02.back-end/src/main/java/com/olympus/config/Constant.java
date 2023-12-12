@@ -15,8 +15,9 @@ public class Constant {
      */
     public static final long JWT_EXPIRATION = 1000 * 60 * 60 * 24 * 3;
     public static final String[] WHITE_LIST = {"/test", "/login", "/", "/index", "/home/", "/api-docs",
-            "/**/swagger-ui/**", "/users/register", "/users/login", "/auth", "/v3/api-docs",
-            "/swagger-ui","users/forgot-password","/users/reset-password"};
+            "/**/swagger-ui/**", "/v3/api-docs", "/swagger-ui",
+            "/v1users/forgot-password", "/v1users/reset-password", "/v1/users/login",
+            "/v1/auth","/v1/users/register", "/v1/users/validate-reset-password", "/v1/users/example/{id}"};
 
 
 }

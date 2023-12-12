@@ -10,8 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 @Component
 @Slf4j
@@ -30,7 +28,7 @@ public class JwtProvider {
                 .setIssuer("Olympus Social Network")
                 .setIssuedAt(now)
                 .setExpiration(exp)
-                .claim("id",authDetails.getAuthentication().getUser().getId())
+                .claim("id",authDetails.getAuthentication().getUser().getId().toString())
                 .signWith(SignatureAlgorithm.HS512,Constant.JWT_SECRET)
                 .compact();
     }

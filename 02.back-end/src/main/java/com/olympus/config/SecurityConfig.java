@@ -37,11 +37,6 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-//    @Bean
-//    public static NoOpPasswordEncoder passwordEncoder() {
-//        return (NoOpPasswordEncoder) NoOpPasswordEncoder.getInstance();
-//    }
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -57,13 +52,5 @@ public class SecurityConfig {
                 });
         http.addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
-
-//                http.cors(AbstractHttpConfigurer::disable)
-//                .csrf(AbstractHttpConfigurer::disable)
-//                .authorizeHttpRequests(request -> {
-//                    request.anyRequest().permitAll();
-//                });
-//        http.addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
-//        return http.build();
     }
 }

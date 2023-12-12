@@ -2,10 +2,8 @@ package com.olympus.controller;
 
 import com.olympus.config.AuthDetailsImpl;
 import com.olympus.config.jwt.JwtProvider;
-import com.olympus.dto.AuthRequest;
-import com.olympus.dto.AuthResponse;
-import com.olympus.dto.ErrorResponse;
-import com.olympus.dto.RegistrationResponse;
+import com.olympus.dto.AuthReq;
+import com.olympus.dto.AuthResp;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,7 +14,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -46,25 +43,26 @@ public class AuthController {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200",
-                    content = {@Content(schema = @Schema(implementation = AuthResponse.class),
+                    content = {@Content(schema = @Schema(implementation = AuthResp.class),
                             mediaType = "application/json")}),
             @ApiResponse(responseCode = "403",
-                    content = {@Content(schema = @Schema())}),
+                    content = {@Content(schema = @Schema(),
+                            mediaType = "application/json")}),
     })
     @SecurityRequirements
-    @PostMapping(value = "/auth")
-    public AuthResponse authenticateUser(@RequestBody AuthRequest authRequest) {
+    @PostMapping(value = "/v1/auth")
+    public AuthResp authenticateUser(@RequestBody AuthReq authReq) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        authRequest.getEmail(),
-                        authRequest.getCode()));
+                        authReq.getEmail(),
+                        authReq.getCode()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtProvider.generateToken((AuthDetailsImpl) authentication.getPrincipal());
-        return new AuthResponse("bearer",jwt);
+        return new AuthResp("bearer", jwt);
     }
 
     @Operation(
-            summary = "Test API",
+            summary = "Test authentication",
             description = "API for testing valid authentication"
     )
     @ApiResponses({
@@ -72,10 +70,11 @@ public class AuthController {
                     content = {@Content(schema = @Schema(),
                             mediaType = "application/json")}),
             @ApiResponse(responseCode = "403",
-                    content = {@Content(schema = @Schema())}),
+                    content = {@Content(schema = @Schema(),
+                            mediaType = "application/json")}),
     })
     @SecurityRequirement(name = "Bearer")
-    @GetMapping("/auth/test")
+    @GetMapping("/v1/auth/test")
     public ResponseEntity<?> testAuthenticate() {
         Map<String, String> text = new HashMap<>();
         text.put("OK", "User is authenticated");

@@ -12,5 +12,5 @@ public interface IAuthenticationRepository extends JpaRepository<Authentication,
     Optional<Authentication> findAuthenticationByUser_Email(String email);
     boolean existsByUserIdAndCode(Long userId, String code);
     void deleteByUser(User user);
-    Optional<Authentication> findByUserId(Long id);
+    Optional<Authentication> findByUser(User user);
 }

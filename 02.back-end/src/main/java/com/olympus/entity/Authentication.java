@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "authentication")
 @NoArgsConstructor
@@ -25,8 +27,12 @@ public class Authentication {
     @Column(name = "code", nullable = false)
     private String code;
 
+    @Column(name = "created_time",nullable = false)
+    private LocalDateTime createdTime;
+
     public Authentication(User user, String code) {
         this.user = user;
         this.code = code;
+        this.createdTime = LocalDateTime.now();
     }
 }
