@@ -12,6 +12,7 @@ public class UpdateUserResp {
     private Long userId;
     @Schema(example = "Update user successfully")
     private String message;
+
     public UpdateUserResp(Long id) {
         this.code = "200";
         this.userId = id;

@@ -19,14 +19,14 @@ public class AppExceptionHandler {
     public ResponseEntity<?> handleMethodArgsException(MethodArgumentNotValidException ex) {
         Map<String, String> message = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
-            if(error instanceof FieldError) {
+            if (error instanceof FieldError) {
                 String fieldName = ((FieldError) error).getField();
                 String errorMessage = error.getDefaultMessage();
                 message.put(fieldName, errorMessage);
             } else {
                 String objectName = error.getObjectName();
                 String errorMessage = error.getDefaultMessage();
-                message.put(objectName,errorMessage);
+                message.put(objectName, errorMessage);
             }
         });
         ErrResp errors = new ErrResp(message);
@@ -37,11 +37,19 @@ public class AppExceptionHandler {
     public ResponseEntity<?> handleConstraintException(ConstraintViolationException ex) {
         Map<String, String> message = new HashMap<>();
         ex.getConstraintViolations().forEach(constraintViolation -> {
-            String fieldName = ((PathImpl)constraintViolation.getPropertyPath()).getLeafNode().getName();
+            String fieldName = ((PathImpl) constraintViolation.getPropertyPath()).getLeafNode().getName();
             String errorMessage = constraintViolation.getMessage();
-            message.put(fieldName,errorMessage);
+            message.put(fieldName, errorMessage);
         });
         ErrResp errors = new ErrResp(message);
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NumberFormatException.class)
+    public ResponseEntity<?> handleNumberFormatException(NumberFormatException ex) {
+        Map<String, String> message = new HashMap<>();
+        message.put("NumberFormatException", "Exception");
+        ErrResp errResp = new ErrResp("400", message);
+        return new ResponseEntity<>(errResp, HttpStatus.BAD_REQUEST);
     }
 }

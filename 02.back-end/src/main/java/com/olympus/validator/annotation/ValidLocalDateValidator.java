@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
-public class ValidLocalDateValidator implements ConstraintValidator<ValidLocalDate,String> {
+public class ValidLocalDateValidator implements ConstraintValidator<ValidLocalDate, String> {
     @Override
     public void initialize(ValidLocalDate constraintAnnotation) {
         ConstraintValidator.super.initialize(constraintAnnotation);
@@ -15,7 +15,7 @@ public class ValidLocalDateValidator implements ConstraintValidator<ValidLocalDa
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext constraintValidatorContext) {
-        if(value == null) {
+        if (value == null) {
             return true;
         }
         try {

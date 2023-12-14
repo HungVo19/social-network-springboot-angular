@@ -1,7 +1,7 @@
 package com.olympus.dto;
 
 import com.olympus.entity.Gender;
-import com.olympus.entity.Status;
+import com.olympus.entity.MaritalStatus;
 import com.olympus.validator.annotation.ExistUserId;
 import com.olympus.validator.annotation.ValidEnum;
 import com.olympus.validator.annotation.ValidLocalDate;
@@ -48,6 +48,6 @@ public class UpdateUserReq {
     private String gender;
 
     @Schema(example = "MARRIED")
-    @ValidEnum(enumClass = Status.class, message = "The status is not valid")
+    @ValidEnum(enumClass = MaritalStatus.class, message = "The status is not valid")
     private String status;
 }

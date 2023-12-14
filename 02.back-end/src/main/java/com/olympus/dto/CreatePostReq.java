@@ -20,7 +20,7 @@ public class CreatePostReq {
     @NotBlank(message = "The content cannot be blank")
     private String content;
     @Schema(example = "public")
-    @NotBlank(message = "The privacy cannot be blank")
+    @NotBlank(message = "The privacy is not valid")
     @ValidEnum(enumClass = Privacy.class, message = "The privacy is not valid")
     private String privacy;
 }

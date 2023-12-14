@@ -48,11 +48,25 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    @Column(name = "status")
+    @Column(name = "maritalStatus")
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private MaritalStatus status;
 
     @Column(name = "role")
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    public User() {
+        this.gender = Gender.RATHER_NOT_TO_SAY;
+        this.status = MaritalStatus.RATHER_NOT_TO_SAY;
+        this.role = Role.ROLE_USER;
+    }
+
+    public User(String id) {
+        this.id = Long.valueOf(id);
+    }
+
+    public User(Long id) {
+        this.id = id;
+    }
 }

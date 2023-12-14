@@ -16,7 +16,9 @@ import static java.lang.annotation.ElementType.METHOD;
 @Target({FIELD, METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ExistEmail {
-    String message() default  "The email does not exist";
+    String message() default "The email does not exist";
+
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
 }

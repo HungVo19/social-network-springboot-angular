@@ -28,8 +28,8 @@ public class JwtProvider {
                 .setIssuer("Olympus Social Network")
                 .setIssuedAt(now)
                 .setExpiration(exp)
-                .claim("id",authDetails.getAuthentication().getUser().getId().toString())
-                .signWith(SignatureAlgorithm.HS512,Constant.JWT_SECRET)
+                .claim("id", authDetails.getAuthentication().getUser().getId().toString())
+                .signWith(SignatureAlgorithm.HS512, Constant.JWT_SECRET)
                 .compact();
     }
 

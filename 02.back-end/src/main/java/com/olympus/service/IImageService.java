@@ -11,15 +11,21 @@ import java.util.UUID;
 
 public interface IImageService {
     String getImageUrl(String name);
+
     String save(MultipartFile file) throws IOException;
+
     String save(BufferedImage bufferedImage, String originalFileName) throws IOException;
+
     void delete(String name) throws IOException;
+
     default String getExtension(String originalFileName) {
         return StringUtils.getFilenameExtension(originalFileName);
     }
+
     default String generateFileName(String originalFileName) {
         return UUID.randomUUID().toString() + getExtension(originalFileName);
     }
+
     default byte[] getByteArrays(BufferedImage bufferedImage, String format) throws IOException {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             ImageIO.write(bufferedImage, format, outputStream);

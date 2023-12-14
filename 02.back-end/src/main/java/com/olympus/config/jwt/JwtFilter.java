@@ -33,12 +33,12 @@ public class JwtFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
         try {
             String jwt = getJwtFromRequest(request);
-            if(StringUtils.hasText(jwt) && jwtProvider.isTokenValidated(jwt)) {
+            if (StringUtils.hasText(jwt) && jwtProvider.isTokenValidated(jwt)) {
                 //Extract user's email from jwt
                 String email = jwtProvider.getUserEmailFromJwt(jwt);
                 //Provide user details
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-                if(userDetails != null) {
+                if (userDetails != null) {
                     //If user is valid, set it to Security Context
                     UsernamePasswordAuthenticationToken
                             authenticationToken = new UsernamePasswordAuthenticationToken(userDetails,
@@ -51,7 +51,7 @@ public class JwtFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             log.error("failed on set user authentication", e);
         }
-        filterChain.doFilter(request,response);
+        filterChain.doFilter(request, response);
     }
 
     /**

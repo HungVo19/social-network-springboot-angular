@@ -10,7 +10,8 @@ public class ChangePwdResp {
     private String code;
     @Schema(example = "Update password successfully")
     private String message;
-    public ChangePwdResp(){
+
+    public ChangePwdResp() {
         this.code = "200";
         this.message = "Update password successfully";
     }

@@ -59,12 +59,7 @@ public class UserController {
     }
 
     @PostMapping(value = "/register")
-    @Operation(
-            summary = "Register",
-            description = "Register a new user with email and password. " +
-                    "The response returns a status code, new user's id and a success message. " +
-                    "Otherwise return the error information."
-    )
+    @Operation(summary = "Register")
     @ApiResponses({
             @ApiResponse(responseCode = "201",
                     content = {@Content(schema = @Schema(implementation = RegistrationResp.class),
@@ -80,12 +75,7 @@ public class UserController {
     }
 
     @PostMapping(value = "/login")
-    @Operation(
-            summary = "Login API",
-            description = "Log in with email and password. An OTP will be sent through email. " +
-                    "The response returns a status code, new user's id and a success message. " +
-                    "Otherwise return the error information."
-    )
+    @Operation(summary = "Login API")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
                     content = {@Content(schema = @Schema(implementation = LoginResp.class),
@@ -102,12 +92,7 @@ public class UserController {
     }
 
     @PostMapping(value = "/forgot-password")
-    @Operation(
-            summary = "Forgot password",
-            description = "User click a link to reset password. A Token will be sent though user email. " +
-                    "The response returns a status code, user's email and a success message. " +
-                    "Otherwise return the error information."
-    )
+    @Operation(summary = "Forgot password")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
                     content = {@Content(schema = @Schema(implementation = ForgotPwRsp.class),
@@ -125,11 +110,7 @@ public class UserController {
     }
 
     @GetMapping("/validate-reset-password")
-    @Operation(
-            summary = "Validate reset password token",
-            description = "The response returns a status code and a success message. " +
-                    "Otherwise return the error information."
-    )
+    @Operation(summary = "Validate reset password token")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
                     content = {@Content(schema = @Schema(implementation = ResetPwdTokenRsp.class),
@@ -152,11 +133,7 @@ public class UserController {
     }
 
     @PostMapping("/reset-password")
-    @Operation(
-            summary = "Reset password",
-            description = "The response returns a status code and a success message. " +
-                    "Otherwise return the error information."
-    )
+    @Operation(summary = "Reset password")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
                     content = {@Content(schema = @Schema(implementation = ChangePwdResp.class),
@@ -176,11 +153,7 @@ public class UserController {
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE}
     )
-    @Operation(
-            summary = "Update user",
-            description = "The response returns a status code and a success message. " +
-                    "Otherwise return the error information."
-    )
+    @Operation(summary = "Update user's profiles")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
                     content = {@Content(schema = @Schema(implementation = UpdateUserResp.class),
@@ -200,20 +173,20 @@ public class UserController {
                                            UpdateUserReq updateUser,
                                            @RequestPart(required = false)
                                            MultipartFile file) throws IOException {
-        Long accessId = Long.parseLong(updateUser.getId());
-        Long pathId = Long.parseLong(id);
-        ResponseEntity<?> accessValidationError = appValidator.checkUserPermission(userDetails, pathId, accessId);
-        if (accessValidationError != null) {
-            return accessValidationError;
+        ErrResp accessError = appValidator.validateCreatePostPermission(userDetails, id, updateUser.getId());
+        if (accessError != null) {
+            return new ResponseEntity<>(accessError, HttpStatus.FORBIDDEN);
         }
 
         String imageUrl = "";
-        ResponseEntity<?> imageValidationError = appValidator.validateImgFile(file);
-        if (imageValidationError != null) {
-            return imageValidationError;
+        if (file != null) {
+            ErrResp imageError = appValidator.validateImgFile(file);
+            if (imageError != null) {
+                return new ResponseEntity<>(imageError, HttpStatus.BAD_REQUEST);
+            }
+            String fileName = iImageService.save(file);
+            imageUrl = iImageService.getImageUrl(fileName);
         }
-        String fileName = iImageService.save(file);
-        imageUrl = iImageService.getImageUrl(fileName);
 
         Long updateId = userService.updateUser(updateUser, imageUrl);
         UpdateUserResp response = new UpdateUserResp(updateId);

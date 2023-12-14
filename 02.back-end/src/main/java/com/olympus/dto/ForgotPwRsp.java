@@ -12,6 +12,7 @@ public class ForgotPwRsp {
     private String email;
     @Schema(example = "Reset password token sent successfully")
     private String message;
+
     public ForgotPwRsp(String email) {
         this.code = "200";
         this.email = email;

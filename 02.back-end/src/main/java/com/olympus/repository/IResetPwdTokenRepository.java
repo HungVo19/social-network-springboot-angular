@@ -9,6 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface IResetPwdTokenRepository extends JpaRepository<ResetPwdToken, Long> {
-   Optional<ResetPwdToken> findByToken(String token);
+    Optional<ResetPwdToken> findByToken(String token);
+
     Optional<ResetPwdToken> findByUser(User user);
 }

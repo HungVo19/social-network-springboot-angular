@@ -10,7 +10,10 @@ import java.util.Optional;
 @Repository
 public interface IAuthenticationRepository extends JpaRepository<Authentication, Long> {
     Optional<Authentication> findAuthenticationByUser_Email(String email);
+
     boolean existsByUserIdAndCode(Long userId, String code);
+
     void deleteByUser(User user);
+
     Optional<Authentication> findByUser(User user);
 }

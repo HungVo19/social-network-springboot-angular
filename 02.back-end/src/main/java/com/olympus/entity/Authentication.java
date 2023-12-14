@@ -27,7 +27,7 @@ public class Authentication {
     @Column(name = "code", nullable = false)
     private String code;
 
-    @Column(name = "created_time",nullable = false)
+    @Column(name = "created_time", nullable = false)
     private LocalDateTime createdTime;
 
     public Authentication(User user, String code) {

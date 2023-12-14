@@ -1,13 +1,13 @@
 package com.olympus.service.impl;
 
 import com.olympus.dto.*;
-import com.olympus.entity.Role;
 import com.olympus.entity.User;
 import com.olympus.mapper.UpdateUserMapper;
 import com.olympus.repository.IUserRepository;
 import com.olympus.service.IUserService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -40,11 +40,17 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
+    public Long findIdByUserDetails(UserDetails userDetails) {
+        String email = userDetails.getUsername();
+        Optional<User> user = findUserByEmail(email);
+        return user.map(User::getId).orElse(null);
+    }
+
+    @Override
     public RegistrationResp register(RegistrationReq regUser) {
         User user = new User();
         user.setEmail(regUser.getEmail().trim().toLowerCase());
         user.setPassword(passwordEncoder.encode(regUser.getPassword()));
-        user.setRole(Role.ROLE_USER);
         User newUser = userRepository.save(user);
         Long newId = newUser.getId();
         return new RegistrationResp(newId);

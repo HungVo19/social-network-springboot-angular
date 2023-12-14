@@ -14,6 +14,7 @@ import java.util.Collections;
 @AllArgsConstructor
 public class AuthDetailsImpl implements UserDetails {
     private Authentication authentication;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singleton(new SimpleGrantedAuthority(authentication.getUser().getRole().toString()));

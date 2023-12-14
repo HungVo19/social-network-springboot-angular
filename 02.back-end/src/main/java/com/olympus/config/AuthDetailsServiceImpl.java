@@ -22,7 +22,7 @@ public class AuthDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Optional<Authentication> authentication = authenticationRepository.findAuthenticationByUser_Email(email);
-        if(authentication.isEmpty()) {
+        if (authentication.isEmpty()) {
             throw new UsernameNotFoundException(email);
         }
         return new AuthDetailsImpl(authentication.get());

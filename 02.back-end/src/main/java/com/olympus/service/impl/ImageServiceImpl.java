@@ -46,14 +46,14 @@ public class ImageServiceImpl implements IImageService {
 
     @Override
     public String getImageUrl(String name) {
-        return String.format(firebaseConfig.getImageUrl(),name);
+        return String.format(firebaseConfig.getImageUrl(), name);
     }
 
     @Override
     public String save(MultipartFile file) throws IOException {
         Bucket bucket = StorageClient.getInstance().bucket();
         String name = generateFileName(file.getOriginalFilename());
-        bucket.create(name,file.getBytes(),file.getContentType());
+        bucket.create(name, file.getBytes(), file.getContentType());
         return name;
     }
 
@@ -62,18 +62,18 @@ public class ImageServiceImpl implements IImageService {
         byte[] bytes = getByteArrays(bufferedImage, getExtension(originalFileName));
         Bucket bucket = StorageClient.getInstance().bucket();
         String name = generateFileName(originalFileName);
-        bucket.create(name,bytes);
+        bucket.create(name, bytes);
         return name;
     }
 
     @Override
     public void delete(String name) throws IOException {
         Bucket bucket = StorageClient.getInstance().bucket();
-        if(!StringUtils.hasLength(name)) {
+        if (!StringUtils.hasLength(name)) {
             throw new IOException("invalid file name");
         }
         Blob blob = bucket.get(name);
-        if(blob == null) {
+        if (blob == null) {
             throw new IOException("file not found");
         }
         blob.delete();

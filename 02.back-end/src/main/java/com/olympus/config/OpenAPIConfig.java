@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
@@ -22,7 +23,8 @@ public class OpenAPIConfig {
     @Bean
     public MappingJackson2HttpMessageConverter octetStreamJsonConverter() {
         MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-        converter.setSupportedMediaTypes(List.of(new MediaType("application", "octet-stream")));
+        converter.setSupportedMediaTypes(List.of(new MediaType("application", "octet-stream"),
+                new MediaType("application", "json")));
         return converter;
     }
 

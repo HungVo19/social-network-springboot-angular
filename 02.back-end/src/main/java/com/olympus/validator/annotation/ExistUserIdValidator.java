@@ -17,7 +17,7 @@ public class ExistUserIdValidator implements ConstraintValidator<ExistUserId, St
     public boolean isValid(String id, ConstraintValidatorContext constraintValidatorContext) {
         try {
             return userService.existByUserId(Long.valueOf(id));
-        } catch (Exception e){
+        } catch (Exception e) {
             return false;
         }
     }

@@ -9,16 +9,17 @@ import java.util.stream.Collectors;
 
 public class EnumValidator implements ConstraintValidator<ValidEnum, String> {
     private List<String> acceptedValues;
+
     @Override
     public void initialize(ValidEnum annotation) {
-        Class<?extends Enum<?>> enumClass = annotation.enumClass();
+        Class<? extends Enum<?>> enumClass = annotation.enumClass();
         acceptedValues = Arrays.stream(enumClass.getEnumConstants())
                 .map(Enum::name).collect(Collectors.toList());
     }
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext constraintValidatorContext) {
-        if(value == null) {
+        if (value == null) {
             return true;
         }
         return acceptedValues.stream()

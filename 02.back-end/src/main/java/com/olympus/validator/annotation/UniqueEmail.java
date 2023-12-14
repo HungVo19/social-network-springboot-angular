@@ -13,7 +13,9 @@ import java.lang.annotation.*;
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UniqueEmail {
-    String message() default  "The email is already taken";
+    String message() default "The email is already taken";
+
     Class<?>[] groups() default {};
+
     Class<? extends Payload>[] payload() default {};
 }

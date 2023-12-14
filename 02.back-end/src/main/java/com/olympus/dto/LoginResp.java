@@ -12,6 +12,7 @@ public class LoginResp {
     private String email;
     @Schema(example = "OTP sent successfully")
     private String message;
+
     public LoginResp(String email) {
         this.code = "200";
         this.email = email;

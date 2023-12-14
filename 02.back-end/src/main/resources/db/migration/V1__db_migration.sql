@@ -58,3 +58,31 @@ CREATE TABLE IF NOT EXISTS `post_image`
     FOREIGN KEY (`post_id`) REFERENCES post (`post_id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = UTF8mb4;
+
+CREATE TABLE IF NOT EXISTS `friend_request`
+(
+    `request_id`   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `sender_id`    BIGINT NOT NULL,
+    `receiver_id`  BIGINT NOT NULL,
+    FOREIGN KEY (`sender_id`) REFERENCES user (`user_id`),
+    FOREIGN KEY (`receiver_id`) REFERENCES user (`user_id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = UTF8mb4;
+
+CREATE TABLE IF NOT EXISTS `friendship`
+(
+    `friendship_id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `user1`         BIGINT NOT NULL,
+    `user2`         BIGINT NOT NULL,
+    `created_time`  DATE,
+    FOREIGN KEY (`user1`) REFERENCES user (`user_id`),
+    FOREIGN KEY (`user2`) REFERENCES user (`user_id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = UTF8mb4;
+
+Insert Into `user` (email, password)
+values ('user1@email', '$2a$10$CkYKFccF/n1ZLD2sdFj5YOGN8jkfSGVtQTSs8U4geTTO0GFGfmKW6');
+Insert Into `user` (email, password)
+values ('user2@email', '$2a$10$CkYKFccF/n1ZLD2sdFj5YOGN8jkfSGVtQTSs8U4geTTO0GFGfmKW6');
+Insert Into `user` (email, password)
+values ('user3@email', '$2a$10$CkYKFccF/n1ZLD2sdFj5YOGN8jkfSGVtQTSs8U4geTTO0GFGfmKW6');

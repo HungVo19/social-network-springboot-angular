@@ -14,6 +14,7 @@ public class RegistrationResp {
     private Long userId;
     @Schema(example = "Create new user successfully")
     private String message;
+
     public RegistrationResp(Long id) {
         this.code = "201";
         this.userId = id;
