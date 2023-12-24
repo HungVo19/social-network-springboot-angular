@@ -38,6 +38,16 @@ public class Post {
     @OneToMany(mappedBy = "post")
     private List<PostImage> images;
 
+    @OneToMany(mappedBy = "post")
+    private List<PostLike> likes;
+
+    @OneToMany(mappedBy = "post")
+    private List<PostComment> comments;
+
+    public Post(Long postId) {
+        this.id = postId;
+    }
+
     public Post() {
         this.deleteStatus = false;
         this.privacy = Privacy.PUBLIC;

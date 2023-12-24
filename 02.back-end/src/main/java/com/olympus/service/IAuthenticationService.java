@@ -11,4 +11,6 @@ public interface IAuthenticationService {
     void save(Authentication authentication);
 
     void createAuth(User user, String code);
+
+    void reset(String email);
 }

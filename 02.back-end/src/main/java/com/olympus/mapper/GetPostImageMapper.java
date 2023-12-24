@@ -1,6 +1,6 @@
 package com.olympus.mapper;
 
-import com.olympus.dto.GetPostImage;
+import com.olympus.dto.response.GetPostImage;
 import com.olympus.entity.PostImage;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

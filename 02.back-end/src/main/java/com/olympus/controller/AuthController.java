@@ -1,9 +1,11 @@
 package com.olympus.controller;
 
 import com.olympus.config.AuthDetailsImpl;
+import com.olympus.config.Constant;
 import com.olympus.config.jwt.JwtProvider;
-import com.olympus.dto.AuthReq;
-import com.olympus.dto.AuthResp;
+import com.olympus.dto.request.AuthRequest;
+import com.olympus.dto.response.BaseResponse;
+import com.olympus.service.IAuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -26,58 +28,56 @@ import java.util.Map;
 
 @RestController
 @CrossOrigin("*")
+@RequestMapping("/v1/auth")
 @Tag(name = "Authentication", description = "Authentication Management APIs")
 public class AuthController {
     private final JwtProvider jwtProvider;
     private final AuthenticationManager authenticationManager;
+    private final IAuthenticationService authenticationService;
 
     @Autowired
     public AuthController(JwtProvider jwtProvider,
-                          AuthenticationManager authenticationManager) {
+                          AuthenticationManager authenticationManager,
+                          IAuthenticationService authenticationService) {
         this.jwtProvider = jwtProvider;
         this.authenticationManager = authenticationManager;
+        this.authenticationService = authenticationService;
     }
 
-    @Operation(
-            summary = "Authenticate an user"
-    )
+    @Operation(summary = "Authenticate an user")
     @ApiResponses({
-            @ApiResponse(responseCode = "200",
-                    content = {@Content(schema = @Schema(implementation = AuthResp.class),
-                            mediaType = "application/json")}),
-            @ApiResponse(responseCode = "403",
-                    content = {@Content(schema = @Schema(),
-                            mediaType = "application/json")}),
+            @ApiResponse(responseCode = "200", content = {
+                    @Content(schema =
+                    @Schema(implementation = BaseResponse.class), mediaType = "application/json")}),
     })
     @SecurityRequirements
-    @PostMapping(value = "/v1/auth")
-    public AuthResp authenticateUser(@RequestBody AuthReq authReq) {
+    @PostMapping()
+    public ResponseEntity<?> authenticateUser(@RequestBody AuthRequest authRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        authReq.getEmail(),
-                        authReq.getCode()));
+                        authRequest.getEmail(),
+                        authRequest.getCode()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtProvider.generateToken((AuthDetailsImpl) authentication.getPrincipal());
-        return new AuthResp("bearer", jwt);
+        Map<String, String> data = new HashMap<>();
+        data.put("token", jwt);
+        authenticationService.reset(authRequest.getEmail());
+        BaseResponse<Map<String, String>, ?> response = BaseResponse.success(HttpStatus.OK, Constant.MSG_OK, data);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @Operation(
-            summary = "Test authentication",
-            description = "API for testing valid authentication"
-    )
+    @Operation(summary = "Test authentication")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
-                    content = {@Content(schema = @Schema(),
-                            mediaType = "application/json")}),
-            @ApiResponse(responseCode = "403",
                     content = {@Content(schema = @Schema(),
                             mediaType = "application/json")}),
     })
     @SecurityRequirement(name = "Bearer")
-    @GetMapping("/v1/auth/test")
+    @GetMapping("/test")
     public ResponseEntity<?> testAuthenticate() {
-        Map<String, String> text = new HashMap<>();
-        text.put("OK", "User is authenticated");
-        return new ResponseEntity<>(text, HttpStatus.OK);
+        Map<String, String> data = new HashMap<>();
+        data.put("OK", "User is authenticated");
+        BaseResponse<Map<String, String>, ?> response = BaseResponse.success(HttpStatus.OK, Constant.MSG_OK, data);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

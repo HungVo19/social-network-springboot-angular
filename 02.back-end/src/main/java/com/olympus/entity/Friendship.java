@@ -11,7 +11,7 @@ import java.time.LocalDate;
 public class Friendship {
     @Id
     @GeneratedValue
-    @Column
+    @Column(name = "friendship_id")
     private Long id;
 
     @ManyToOne

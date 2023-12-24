@@ -1,0 +1,18 @@
+1. Tạo bảng với insert sample data bằng liquibase (database version)
+
+2. Docker mysql:
+chạy thử project trong docker -> docker chạy ntn
+port docker != local
+
+3. Setup redis
+Sử dụng với project, tạo một hàm A lấy danh sách sinh viên sử dụng cache
+khi gọi lại Hàm A, sẽ không chạy nữa mà lấy được data từ trong cache
+khi thêm mới hoặc xóa 1 sinh viên vào danh sách thì dữ liệu phải là mới nhất từ cache và từ lần gọi thứ 2 vào hàm A sẽ không gọi vào database nữa
+
+4. rabbit mq hoặc kafka
+sử dụng với project
+
+5. webservice & micro service
+https://huongdanjava.com/vi/xay-dung-api-gateway-cho-ung-dung-web-su-dung-zuul-proxy-cua-spring-cloud-netflix.html
+docker:
+docker container run --name mysqldb --network employee-mysql -e MYSQL_ROOT_PASSWORD=123456 -e MYSQL_DATABASE=bootdb -d mysql:8

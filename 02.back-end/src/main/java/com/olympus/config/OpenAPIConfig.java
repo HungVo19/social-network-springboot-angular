@@ -14,11 +14,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
 public class OpenAPIConfig {
+
     //handle file upload with json in swagger-ui
     @Bean
     public MappingJackson2HttpMessageConverter octetStreamJsonConverter() {

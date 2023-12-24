@@ -61,9 +61,9 @@ CREATE TABLE IF NOT EXISTS `post_image`
 
 CREATE TABLE IF NOT EXISTS `friend_request`
 (
-    `request_id`   BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `sender_id`    BIGINT NOT NULL,
-    `receiver_id`  BIGINT NOT NULL,
+    `request_id`  BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `sender_id`   BIGINT NOT NULL,
+    `receiver_id` BIGINT NOT NULL,
     FOREIGN KEY (`sender_id`) REFERENCES user (`user_id`),
     FOREIGN KEY (`receiver_id`) REFERENCES user (`user_id`)
 ) ENGINE = InnoDB
@@ -76,7 +76,34 @@ CREATE TABLE IF NOT EXISTS `friendship`
     `user2`         BIGINT NOT NULL,
     `created_time`  DATE,
     FOREIGN KEY (`user1`) REFERENCES user (`user_id`),
-    FOREIGN KEY (`user2`) REFERENCES user (`user_id`)
+    FOREIGN KEY (`user2`) REFERENCES user (`user_id`),
+    UNIQUE (`user1`,`user2`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = UTF8mb4;
+
+CREATE TABLE IF NOT EXISTS `post_comment`
+(
+    `comment_id`    BIGINT   NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `post_id`       BIGINT   NOT NULL,
+    `user_id`       BIGINT   NOT NULL,
+    `content`       LONGTEXT NOT NULL,
+    `created_time`  DATETIME NOT NULL,
+    `updated_time`  DATETIME NOT NULL,
+    `delete_status` BOOLEAN  NOT NULL DEFAULT false,
+    FOREIGN KEY (`post_id`) REFERENCES post (`post_id`),
+    FOREIGN KEY (`user_id`) REFERENCES user (`user_id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = UTF8mb4;
+
+CREATE TABLE IF NOT EXISTS `post_like`
+(
+    `like_id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `post_id` BIGINT NOT NULL,
+    `user_id` BIGINT NOT NULL,
+    `created_time` DATETIME NOT NULL,
+    FOREIGN KEY (`post_id`) REFERENCES post (`post_id`),
+    FOREIGN KEY (`user_id`) REFERENCES user (`user_id`),
+    UNIQUE (post_id, user_id)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = UTF8mb4;
 

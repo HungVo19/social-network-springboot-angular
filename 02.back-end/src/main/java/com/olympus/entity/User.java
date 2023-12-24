@@ -48,7 +48,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    @Column(name = "maritalStatus")
+    @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private MaritalStatus status;
 

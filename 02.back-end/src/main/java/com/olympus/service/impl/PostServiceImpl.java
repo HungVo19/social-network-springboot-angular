@@ -1,18 +1,23 @@
 package com.olympus.service.impl;
 
-import com.olympus.dto.CreatePostReq;
-import com.olympus.dto.GetPost;
-import com.olympus.dto.UpdatePostReq;
+import com.olympus.dto.newsfeed.NewsfeedPostDTO;
+import com.olympus.dto.request.PostCreate;
+import com.olympus.dto.request.PostUpdate;
+import com.olympus.dto.response.CurrentUserPost;
+import com.olympus.dto.response.OtherUserPost;
 import com.olympus.entity.Post;
 import com.olympus.entity.User;
-import com.olympus.mapper.CreatePostMapper;
-import com.olympus.mapper.GetPostMapper;
-import com.olympus.mapper.UpdatePostMapper;
+import com.olympus.mapper.*;
 import com.olympus.repository.IPostRepository;
+import com.olympus.service.IFriendshipService;
 import com.olympus.service.IPostImageService;
 import com.olympus.service.IPostService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,60 +26,63 @@ import java.util.List;
 @Transactional
 public class PostServiceImpl implements IPostService {
     private final IPostRepository postRepository;
-    private final CreatePostMapper createPostMapper;
+    private final PostCreateMapper postCreateMapper;
     private final IPostImageService postImageService;
-    private final UpdatePostMapper updatePostMapper;
-    private final GetPostMapper getPostMapper;
+    private final PostUpdateMapper postUpdateMapper;
+    private final CurrentUserPostMapper currentUserPostMapper;
+    private final IFriendshipService friendshipService;
+    private final NewsfeedPostDTOMapper newsfeedPostDTOMapper;
+    private final OtherUserPostMapper otherUserPostMapper;
 
     @Autowired
     public PostServiceImpl(IPostRepository postRepository,
-                           CreatePostMapper createPostMapper,
+                           PostCreateMapper postCreateMapper,
                            IPostImageService postImageService,
-                           UpdatePostMapper updatePostMapper,
-                           GetPostMapper getPostMapper) {
+                           PostUpdateMapper postUpdateMapper,
+                           CurrentUserPostMapper currentUserPostMapper,
+                           IFriendshipService friendshipService,
+                           NewsfeedPostDTOMapper newsfeedPostDTOMapper,
+                           OtherUserPostMapper otherUserPostMapper) {
         this.postRepository = postRepository;
-        this.createPostMapper = createPostMapper;
+        this.postCreateMapper = postCreateMapper;
         this.postImageService = postImageService;
-        this.updatePostMapper = updatePostMapper;
-        this.getPostMapper = getPostMapper;
+        this.postUpdateMapper = postUpdateMapper;
+        this.currentUserPostMapper = currentUserPostMapper;
+        this.friendshipService = friendshipService;
+        this.newsfeedPostDTOMapper = newsfeedPostDTOMapper;
+        this.otherUserPostMapper = otherUserPostMapper;
     }
 
     @Override
-    public List<GetPost> getAllByUserAndDeleteStatusIsFalse(Long userId) {
-        User user = new User(userId);
-        List<Post> posts = postRepository.getAllByUserAndDeleteStatusIsFalse(user);
-        return getPostMapper.entitiesToDTOs(posts);
-    }
-
-    @Override
-    public Long createPost(CreatePostReq createPostReq, List<String> imageUrls) {
-        Post postReq = createPostMapper.toPost(createPostReq);
-        Post newPost = postRepository.save(postReq);
+    public Long createPost(Long userId, PostCreate postCreate, List<String> imageUrls) {
+        Post newPost = postCreateMapper.toPost(postCreate);
+        newPost.setUser(new User(userId));
+        Long newPostId = postRepository.save(newPost).getId();
 
         if (!imageUrls.isEmpty()) {
             postImageService.save(imageUrls, newPost);
         }
 
-        return newPost.getId();
+        return newPostId;
     }
 
     @Override
-    public Long updatePost(UpdatePostReq updatePostReq, List<String> imageUrls) {
-        Long accessId = Long.valueOf(updatePostReq.getPostId());
-        Post currentPost = postRepository.findById(accessId).orElseThrow();
-        updatePostMapper.updateEntity(updatePostReq, currentPost);
+    public Long updatePost(Long postId, PostUpdate postUpdate, List<String> imageUrls) {
+        Post post = postRepository.findById(postId).orElseThrow();
+        postUpdateMapper.updateEntity(postUpdate, post);
 
-        postImageService.deleteByPost(currentPost);
+        postImageService.deleteByPost(post);
 
         if (!imageUrls.isEmpty()) {
-            postImageService.save(imageUrls, currentPost);
+            postImageService.save(imageUrls, post);
         }
-        return currentPost.getId();
+        postRepository.save(post);
+        return post.getId();
     }
 
     @Override
-    public boolean existByPostId(Long id) {
-        return postRepository.existsById(id);
+    public boolean existByPostIdAndNotDeleted(Long id) {
+        return postRepository.existByIdAndNotDeleted(id) == 1;
     }
 
     @Override
@@ -87,5 +95,46 @@ public class PostServiceImpl implements IPostService {
         Post post = postRepository.getReferenceById(id);
         post.setDeleteStatus(true);
         postRepository.save(post);
+    }
+
+    @Override
+    public Post findByPostId(long id) {
+        return postRepository.getReferenceById(id);
+    }
+
+    @Override
+    public Page<NewsfeedPostDTO> getNewsfeed(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        List<Long> friendIds = friendshipService.getListFriendIds(userId);
+        if (friendIds == null || friendIds.isEmpty()) {
+            return Page.empty(pageable);
+        }
+        Page<Post> postsPage = postRepository.findPostByFriendsAndDeleteStatusAndPrivacy(friendIds, pageable);
+        List<NewsfeedPostDTO> newsfeed = newsfeedPostDTOMapper.toListDTO(postsPage.getContent());
+        return new PageImpl<>(newsfeed, pageable, postsPage.getTotalElements());
+    }
+
+    @Override
+    public Page<CurrentUserPost> getCurrentUserPosts(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Post> posts = postRepository.getAllByUser_IdAndDeleteStatusIsFalseOrderByCreatedTimeDesc(userId, pageable);
+        List<CurrentUserPost> currentUserPosts = currentUserPostMapper.toListDTOs(posts.getContent());
+        return new PageImpl<>(currentUserPosts, pageable, posts.getTotalElements());
+    }
+
+    @Override
+    public Page<OtherUserPost> getFriendPosts(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Post> posts = postRepository.findFriendUserPost(userId, pageable);
+        List<OtherUserPost> friendUserPosts = otherUserPostMapper.toListDTOs(posts.getContent());
+        return new PageImpl<>(friendUserPosts, pageable, posts.getTotalElements());
+    }
+
+    @Override
+    public Page<OtherUserPost> getOtherUserPosts(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Post> posts = postRepository.findOtherUserPost(userId, pageable);
+        List<OtherUserPost> friendUserPosts = otherUserPostMapper.toListDTOs(posts.getContent());
+        return new PageImpl<>(friendUserPosts, pageable, posts.getTotalElements());
     }
 }

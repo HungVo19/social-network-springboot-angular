@@ -46,10 +46,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(request -> {
-                    request.requestMatchers(Constant.WHITE_LIST).permitAll()
-                            .anyRequest().authenticated();
-                });
+                .authorizeHttpRequests(request -> request.requestMatchers(Constant.WHITE_LIST).permitAll()
+                        .anyRequest().authenticated());
         http.addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

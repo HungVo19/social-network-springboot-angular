@@ -2,6 +2,7 @@ package com.olympus.service.impl;
 
 import com.olympus.entity.Authentication;
 import com.olympus.entity.User;
+import com.olympus.exception.UserNotFoundException;
 import com.olympus.repository.IAuthenticationRepository;
 import com.olympus.service.IAuthenticationService;
 import jakarta.transaction.Transactional;
@@ -59,5 +60,13 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
             Authentication authentication = new Authentication(user, hashedCode);
             authenticationRepository.save(authentication);
         }
+    }
+
+    @Override
+    public void reset(String email) {
+        Authentication authentication = authenticationRepository.
+                findAuthenticationByUser_Email(email).orElseThrow(()-> new UserNotFoundException(email));
+        authentication.setCode("");
+        authenticationRepository.save(authentication);
     }
 }

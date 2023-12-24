@@ -67,7 +67,7 @@ public class MailServiceImpl implements IMailService {
     }
 
     @Override
-    public void sendResetToken(String email) throws MessagingException {
+    public void sendPasswordResetToken(String email) throws MessagingException {
         String token = UUID.randomUUID().toString();
         User user = userService.findUserByEmail(email).orElseThrow();
         resetPwdTokenService.createToken(user, token);

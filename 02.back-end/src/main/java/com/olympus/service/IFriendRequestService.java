@@ -1,14 +1,22 @@
 package com.olympus.service;
 
-import com.olympus.dto.FrdReqCrt;
+import com.olympus.dto.request.FriendRequestSent;
+import com.olympus.dto.response.FriendRequestDTO;
 import com.olympus.entity.FriendRequest;
 
+import java.util.List;
+
 public interface IFriendRequestService {
-    boolean existsByUserId(String id1, String id2);
-    Long createRequest(FrdReqCrt reqCrt);
-    boolean isValidDeletePermission(Long userId);
-    void deleteRequest(String requestId);
+    boolean existsByUserId(Long id1, Long id2);
+    Long createRequest(Long senderId, Long receiverId);
+    boolean isValidDeletePermission(Long userId, Long requestId);
+    void deleteRequest(Long requestId);
     boolean existByRequestId(String requestId);
     boolean validAccepter(Long requestId, Long userId);
-    FriendRequest findById(String requestId);
+    FriendRequest findById(long requestId);
+    boolean existByRequestId(long id);
+    List<FriendRequestDTO> getListRequestReceived(Long userId);
+    List<FriendRequestDTO> getListRequestSent(Long userId);
+    FriendRequest findByUserIds(Long userId1, Long userId2);
+    String identifyRole(Long sourceId, Long targetId);
 }

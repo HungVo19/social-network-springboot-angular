@@ -1,6 +1,8 @@
 package com.olympus.exception;
 
-import com.olympus.dto.ErrResp;
+import com.olympus.config.Constant;
+import com.olympus.dto.response.BaseResponse;
+import jakarta.mail.MessagingException;
 import jakarta.validation.ConstraintViolationException;
 import org.hibernate.validator.internal.engine.path.PathImpl;
 import org.springframework.http.HttpStatus;
@@ -10,46 +12,78 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
 public class AppExceptionHandler {
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<?> handleGeneralException(Exception ex) {
+//        BaseResponse<String, ?> error =
+//                BaseResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.name(), ex.getLocalizedMessage());
+//        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleMethodArgsException(MethodArgumentNotValidException ex) {
-        Map<String, String> message = new HashMap<>();
+        Map<String, String> errorDetails = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             if (error instanceof FieldError) {
                 String fieldName = ((FieldError) error).getField();
                 String errorMessage = error.getDefaultMessage();
-                message.put(fieldName, errorMessage);
+                errorDetails.put(fieldName, errorMessage);
             } else {
                 String objectName = error.getObjectName();
                 String errorMessage = error.getDefaultMessage();
-                message.put(objectName, errorMessage);
+                errorDetails.put(objectName, errorMessage);
             }
         });
-        ErrResp errors = new ErrResp(message);
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        BaseResponse<Map<String, String>, ?> error = BaseResponse.error(HttpStatus.BAD_REQUEST,
+                MethodArgumentNotValidException.class.getSimpleName(), errorDetails);
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<?> handleConstraintException(ConstraintViolationException ex) {
-        Map<String, String> message = new HashMap<>();
+        Map<String, String> errorDetails = new HashMap<>();
         ex.getConstraintViolations().forEach(constraintViolation -> {
             String fieldName = ((PathImpl) constraintViolation.getPropertyPath()).getLeafNode().getName();
             String errorMessage = constraintViolation.getMessage();
-            message.put(fieldName, errorMessage);
+            errorDetails.put(fieldName, errorMessage);
         });
-        ErrResp errors = new ErrResp(message);
-        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+        BaseResponse<Map<String, String>, ?> error = BaseResponse.error(HttpStatus.BAD_REQUEST,
+                MethodArgumentNotValidException.class.getSimpleName(), errorDetails);
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(NumberFormatException.class)
-    public ResponseEntity<?> handleNumberFormatException(NumberFormatException ex) {
-        Map<String, String> message = new HashMap<>();
-        message.put("NumberFormatException", "Exception");
-        ErrResp errResp = new ErrResp("400", message);
-        return new ResponseEntity<>(errResp, HttpStatus.BAD_REQUEST);
+    @ExceptionHandler(MessagingException.class)
+    public ResponseEntity<?> handleMessagingException(MessagingException ex) {
+        BaseResponse<String, ?> error =
+                BaseResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, MessagingException.class.getSimpleName(), ex.getLocalizedMessage());
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<?> handleIOException(IOException ex) {
+        BaseResponse<String, ?> error =
+                BaseResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, IOException.class.getSimpleName(), ex.getLocalizedMessage());
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<?> handleUserNotFoundException(UserNotFoundException ex) {
+        BaseResponse<String, ?> error =
+                BaseResponse.error(HttpStatus.BAD_REQUEST, UserNotFoundException.class.getSimpleName(), ex.getLocalizedMessage());
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidImageException.class)
+    public ResponseEntity<?> handleInvalidImageException() {
+        Map<String, String> error = new HashMap<>();
+        error.put("File Error", "Invalid file format. Only image files are allowed.");
+        BaseResponse<Map<String, String>, ?> response =
+                BaseResponse.error(HttpStatus.BAD_REQUEST, Constant.MSG_ERROR, error);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 }

@@ -1,11 +1,20 @@
 package com.olympus.controller;
 
-import com.olympus.dto.*;
+import com.olympus.config.Constant;
+import com.olympus.dto.newsfeed.NewsfeedPostDTO;
+import com.olympus.dto.request.PostCreate;
+import com.olympus.dto.request.PostUpdate;
+import com.olympus.dto.response.BaseResponse;
+import com.olympus.dto.response.CurrentUserPost;
+import com.olympus.dto.response.OtherUserPost;
+import com.olympus.service.IFriendshipService;
 import com.olympus.service.IImageService;
 import com.olympus.service.IPostService;
+import com.olympus.service.IUserService;
 import com.olympus.validator.AppValidator;
+import com.olympus.validator.annotation.post.ExistByPostIdAndNotDeleted;
+import com.olympus.validator.annotation.user.ExistUserById;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -13,10 +22,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,204 +35,185 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/v1/users")
+@RequestMapping("/v1/users/{userId}")
 @CrossOrigin("*")
-@Tag(name = "Post", description = "User's Post Management APIs")
+@Tag(name = "Posts", description = "User's Posts Management APIs")
 @Validated
 public class PostController {
     private final AppValidator appValidator;
     private final IImageService iImageService;
     private final IPostService postService;
+    private final IUserService userService;
+    private final IFriendshipService friendshipService;
 
     @Autowired
     public PostController(AppValidator appValidator,
                           IImageService iImageService,
-                          IPostService postService) {
+                          IPostService postService,
+                          IUserService userService,
+                          IFriendshipService friendshipService) {
         this.appValidator = appValidator;
         this.iImageService = iImageService;
         this.postService = postService;
+        this.userService = userService;
+        this.friendshipService = friendshipService;
     }
 
-    @GetMapping("/{userId}/posts")
+    @GetMapping("/posts")
     @Operation(summary = "Get an user's posts")
     @ApiResponses({
-            @ApiResponse(responseCode = "201",
-                    content = {@Content(schema = @Schema(implementation = CreatePostResp.class),
-                            mediaType = "application/json")}),
-            @ApiResponse(responseCode = "400",
-                    content = {@Content(schema = @Schema(implementation = ErrResp.class),
-                            mediaType = "application/json")}),
-            @ApiResponse(responseCode = "403",
-                    content = {@Content(schema = @Schema(implementation = ErrResp.class),
-                            mediaType = "application/json")}),
+            @ApiResponse(responseCode = "201", content = {
+                    @Content(schema =
+                    @Schema(implementation = BaseResponse.class), mediaType = "application/json")})
     })
     @SecurityRequirement(name = "Bearer")
-    public ResponseEntity<?> getUserPosts(@AuthenticationPrincipal
-                                          UserDetails userDetails,
-                                          @PathVariable
-                                          @NotNull(message = "The Id is an invalid Id")
-                                          @NotBlank(message = "The Id is an invalid Id")
-                                          @Pattern(regexp = "^[1-9]\\d*$", message = "The Id must be a positive integer")
-                                          String userId) {
-        ErrResp accessError = appValidator.validateGetPostPermission(userDetails, userId);
-        if (accessError != null) {
-            return new ResponseEntity<>(accessError, HttpStatus.FORBIDDEN);
+    public ResponseEntity<?> getUserPosts(@AuthenticationPrincipal UserDetails userDetails,
+                                          @PathVariable @Valid @ExistUserById Long userId,
+                                          @RequestParam(defaultValue = "0") @Valid int page,
+                                          @RequestParam(defaultValue = "5") @Valid int size) {
+        Long loggedInUserId = userService.findIdByUserDetails(userDetails);
+        if (loggedInUserId.equals(userId)) {
+            Page<CurrentUserPost> data = postService.getCurrentUserPosts(loggedInUserId, page, size);
+            BaseResponse<Page<CurrentUserPost>, ?> response =
+                    BaseResponse.success(HttpStatus.OK, Constant.MSG_OK, data);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         }
-        List<GetPost> posts = postService.getAllByUserAndDeleteStatusIsFalse(Long.valueOf(userId));
-        return new ResponseEntity<>(posts, HttpStatus.OK);
+
+        if (friendshipService.existsFriendship(loggedInUserId, userId)) {
+            Page<OtherUserPost> data = postService.getFriendPosts(userId, page, size);
+            BaseResponse<Page<OtherUserPost>, ?> response =
+                    BaseResponse.success(HttpStatus.OK, Constant.MSG_OK, data);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+
+        Page<OtherUserPost> data = postService.getOtherUserPosts(userId, page, size);
+        BaseResponse<Page<OtherUserPost>, ?> response =
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_OK, data);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping(
-            value = "/{userId}/posts",
+            value = "/posts",
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE}
     )
     @Operation(summary = "Create new post")
     @ApiResponses({
-            @ApiResponse(responseCode = "201",
-                    content = {@Content(schema = @Schema(implementation = CreatePostResp.class),
-                            mediaType = "application/json")}),
-            @ApiResponse(responseCode = "400",
-                    content = {@Content(schema = @Schema(implementation = ErrResp.class),
-                            mediaType = "application/json")}),
-            @ApiResponse(responseCode = "403",
-                    content = {@Content(schema = @Schema(implementation = ErrResp.class),
-                            mediaType = "application/json")}),
+            @ApiResponse(responseCode = "201", content = {
+                    @Content(schema =
+                    @Schema(implementation = BaseResponse.class), mediaType = "application/json")})
     })
     @SecurityRequirement(name = "Bearer")
-    public ResponseEntity<?> createPost(@AuthenticationPrincipal
-                                        UserDetails userDetails,
-                                        @PathVariable
-                                        @NotNull(message = "The Id is an invalid Id")
-                                        @NotBlank(message = "The Id is an invalid Id")
-                                        @Pattern(regexp = "^[1-9]\\d*$", message = "The Id must be a positive integer")
-                                        String userId,
-                                        @RequestPart @Valid
-                                        CreatePostReq postReq,
+    public ResponseEntity<?> createPost(@AuthenticationPrincipal UserDetails userDetails,
+                                        @PathVariable @Valid @ExistUserById Long userId,
+                                        @RequestPart @Valid PostCreate post,
                                         @RequestPart(required = false)
                                         MultipartFile[] files) throws IOException {
-        ErrResp accessError =
-                appValidator.validateCreatePostPermission(userDetails, userId, postReq.getUserId());
-        if (accessError != null) {
-            return new ResponseEntity<>(accessError, HttpStatus.FORBIDDEN);
+        ResponseEntity<?> validationError = appValidator.validatePostCreate(userDetails, userId, post, files);
+        if (validationError != null) {
+            return validationError;
         }
 
-        List<String> images = new ArrayList<>();
-        if (files != null) {
-            ErrResp imgErrRsp = appValidator.validateImgFile(files);
-            if (imgErrRsp != null) {
-                return new ResponseEntity<>(imgErrRsp, HttpStatus.BAD_REQUEST);
-            }
-            for (MultipartFile file : files) {
-                String fileName = iImageService.save(file);
-                String url = iImageService.getImageUrl(fileName);
-                images.add(url);
-            }
-        }
+        List<String> images = uploadPostImages(files);
 
-        Long newPostId = postService.createPost(postReq, images);
-        return new ResponseEntity<>(new CreatePostResp(newPostId), HttpStatus.CREATED);
+        Long newPostId = postService.createPost(userId, post, images);
+        Map<String, Long> data = new HashMap<>();
+        data.put("id", newPostId);
+        BaseResponse<Map<String, Long>, ?> response =
+                BaseResponse.success(HttpStatus.CREATED, Constant.MSG_SUCCESS_POST_CREATE, data);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PutMapping(
-            value = "/{userId}/posts/{postId}",
+            value = "/posts/{postId}",
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE}
     )
     @Operation(summary = "Update an existing post")
     @ApiResponses({
-            @ApiResponse(responseCode = "200",
-                    content = {@Content(schema = @Schema(implementation = UpdatePostResp.class),
-                            mediaType = "application/json")}),
-            @ApiResponse(responseCode = "400",
-                    content = {@Content(schema = @Schema(implementation = ErrResp.class),
-                            mediaType = "application/json")}),
-            @ApiResponse(responseCode = "403",
-                    content = {@Content(schema = @Schema(implementation = ErrResp.class),
-                            mediaType = "application/json")}),
+            @ApiResponse(responseCode = "200", content = {
+                    @Content(schema =
+                    @Schema(implementation = BaseResponse.class), mediaType = "application/json")})
     })
     @SecurityRequirement(name = "Bearer")
-    public ResponseEntity<?> updatePost(@AuthenticationPrincipal
-                                        UserDetails userDetails,
-                                        @PathVariable
-                                        @NotNull(message = "The Id is an invalid Id")
-                                        @NotBlank(message = "The Id is an invalid Id")
-                                        @Pattern(regexp = "^[1-9]\\d*$", message = "The Id must be a positive integer")
-                                        @Parameter(description = "user id", example = "1")
-                                        String userId,
-                                        @PathVariable
-                                        @NotNull(message = "The Id is an invalid Id")
-                                        @NotBlank(message = "The Id is an invalid Id")
-                                        @Pattern(regexp = "^[1-9]\\d*$", message = "The Id must be a positive integer")
-                                        @Parameter(description = "post id", example = "1")
-                                        String postId,
-                                        @RequestPart @Valid
-                                        UpdatePostReq updatePostReq,
-                                        @RequestPart(required = false)
-                                        MultipartFile[] files) throws IOException {
-        ErrResp accessError = appValidator.validateUpdatePostPermission(userDetails, userId, postId,
-                updatePostReq.getUserId(), updatePostReq.getPostId());
-        if (accessError != null) {
-            return new ResponseEntity<>(accessError, HttpStatus.FORBIDDEN);
+    public ResponseEntity<?> updatePost(@AuthenticationPrincipal UserDetails userDetails,
+                                        @PathVariable @Valid @ExistUserById Long userId,
+                                        @PathVariable @Valid
+                                        @ExistByPostIdAndNotDeleted Long postId,
+                                        @RequestPart @Valid PostUpdate post,
+                                        @RequestPart(required = false) MultipartFile[] files) throws IOException {
+        ResponseEntity<?> validationError = appValidator.validatePostUpdate(userDetails, userId, postId, post, files);
+        if (validationError != null) {
+            return validationError;
         }
 
+        List<String> images = uploadPostImages(files);
+
+        Long updatedPostId = postService.updatePost(postId, post, images);
+        Map<String, Long> data = new HashMap<>();
+        data.put("updatedPostId", updatedPostId);
+        BaseResponse<Map<String, Long>, ?> response =
+                BaseResponse.success(HttpStatus.CREATED, Constant.MSG_SUCCESS_POST_UPDATE, data);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @DeleteMapping("/posts/{postId}")
+    @Operation(summary = "Delete an existing post")
+    @ApiResponses({
+            @ApiResponse(responseCode = "20", content = {
+                    @Content(schema =
+                    @Schema(implementation = BaseResponse.class), mediaType = "application/json")})
+    })
+    @SecurityRequirement(name = "Bearer")
+    public ResponseEntity<?> deletePost(@AuthenticationPrincipal UserDetails userDetails,
+                                        @PathVariable @Valid @ExistUserById Long userId,
+                                        @PathVariable @Valid @ExistByPostIdAndNotDeleted Long postId) {
+        ResponseEntity<?> validationError = appValidator.validatePostDelete(userDetails, userId, postId);
+        if (validationError != null) {
+            return validationError;
+        }
+        postService.deletePost(postId);
+        BaseResponse<String, ?> response =
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_OK, Constant.MSG_SUCCESS_POST_DELETE);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/newsfeed")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", content = {
+                    @Content(schema =
+                    @Schema(implementation = BaseResponse.class), mediaType = "application/json")})
+    })
+    @SecurityRequirement(name = "Bearer")
+    ResponseEntity<?> getTimeline(@AuthenticationPrincipal UserDetails userDetails,
+                                  @PathVariable @Valid @ExistUserById Long userId,
+                                  @RequestParam(defaultValue = "0") @Valid int page,
+                                  @RequestParam(defaultValue = "5") @Valid int size) {
+        ResponseEntity<?> validationError = appValidator.validateNewsfeed(userDetails, userId);
+        if (validationError != null) {
+            return validationError;
+        }
+        Page<NewsfeedPostDTO> data = postService.getNewsfeed(userId, page, size);
+        BaseResponse<Page<NewsfeedPostDTO>,?> response =
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_OK, data);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    private List<String> uploadPostImages(MultipartFile[] files) throws IOException {
         List<String> images = new ArrayList<>();
         if (files != null) {
-            ErrResp imgErrRsp = appValidator.validateImgFile(files);
-            if (imgErrRsp != null) {
-                return new ResponseEntity<>(imgErrRsp, HttpStatus.BAD_REQUEST);
-            }
+            appValidator.validateImgFile(files);
             for (MultipartFile file : files) {
                 String fileName = iImageService.save(file);
                 String url = iImageService.getImageUrl(fileName);
                 images.add(url);
             }
         }
-
-        Long newPostId = postService.updatePost(updatePostReq, images);
-        return new ResponseEntity<>(new CreatePostResp(newPostId), HttpStatus.OK);
-    }
-
-    @DeleteMapping("/{userId}/posts/{postId}")
-    @Operation(summary = "Delete an existing post")
-    @ApiResponses({
-            @ApiResponse(responseCode = "20",
-                    content = {@Content(schema = @Schema(implementation = DeletePostResp.class),
-                            mediaType = "application/json")}),
-            @ApiResponse(responseCode = "400",
-                    content = {@Content(schema = @Schema(implementation = ErrResp.class),
-                            mediaType = "application/json")}),
-            @ApiResponse(responseCode = "403",
-                    content = {@Content(schema = @Schema(implementation = ErrResp.class),
-                            mediaType = "application/json")}),
-    })
-    @SecurityRequirement(name = "Bearer")
-    public ResponseEntity<?> deletePost(@AuthenticationPrincipal
-                                        UserDetails userDetails,
-                                        @PathVariable
-                                        @NotNull(message = "The Id is an invalid Id")
-                                        @NotBlank(message = "The Id is an invalid Id")
-                                        @Pattern(regexp = "^[1-9]\\d*$", message = "The Id must be a positive integer")
-                                        @Parameter(description = "user id", example = "1")
-                                        String userId,
-                                        @NotNull(message = "The Id is an invalid Id")
-                                        @NotBlank(message = "The Id is an invalid Id")
-                                        @Pattern(regexp = "^[1-9]\\d*$", message = "The Id must be a positive integer")
-                                        @Parameter(description = "user id", example = "1")
-                                        @PathVariable String postId) {
-        ErrResp accessError = appValidator.validateDeletePostPermission(userDetails, userId, postId);
-        if (accessError != null) {
-            return new ResponseEntity<>(accessError, HttpStatus.FORBIDDEN);
-        }
-        postService.deletePost(Long.valueOf(postId));
-        return new ResponseEntity<>(new DeletePostResp(), HttpStatus.OK);
-    }
-
-    @GetMapping("/{userid}/timeline")
-    ResponseEntity<?> getTimeline(@PathVariable String userid){
-
+        return images;
     }
 }

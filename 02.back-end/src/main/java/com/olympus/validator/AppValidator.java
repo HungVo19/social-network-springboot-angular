@@ -1,12 +1,15 @@
 package com.olympus.validator;
 
 import com.olympus.config.Constant;
-import com.olympus.dto.ErrResp;
-import com.olympus.dto.FrdReqCrt;
-import com.olympus.service.IFriendRequestService;
-import com.olympus.service.IFriendshipService;
-import com.olympus.service.IPostService;
-import com.olympus.service.IUserService;
+import com.olympus.dto.request.FriendRequestSent;
+import com.olympus.dto.request.PostCreate;
+import com.olympus.dto.request.PostUpdate;
+import com.olympus.dto.response.BaseResponse;
+import com.olympus.entity.Post;
+import com.olympus.entity.PostComment;
+import com.olympus.entity.Privacy;
+import com.olympus.exception.InvalidImageException;
+import com.olympus.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,217 +17,289 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Component
 public class AppValidator {
     private final IUserService userService;
     private final IPostService postService;
     private final IFriendRequestService friendRequestService;
     private final IFriendshipService friendshipService;
+    private final IPostCommentService postCommentService;
 
     @Autowired
-    public AppValidator(IUserService userService,
-                        IPostService postService,
-                        IFriendRequestService friendRequestService,
-                        IFriendshipService friendshipService) {
+    public AppValidator(IUserService userService, IPostService postService, IFriendRequestService friendRequestService, IFriendshipService friendshipService, IPostCommentService postCommentService) {
         this.userService = userService;
         this.postService = postService;
         this.friendRequestService = friendRequestService;
         this.friendshipService = friendshipService;
+        this.postCommentService = postCommentService;
     }
 
-    public ErrResp validateGetPostPermission(UserDetails userDetails, String pathUserId) {
+    public ResponseEntity<?> validatePostCreate(UserDetails userDetails, Long pathUserId, PostCreate post, MultipartFile[] files) {
+        return checkCommonPostCreateAndUpdate(userDetails, pathUserId, post, files);
+    }
+
+    public ResponseEntity<?> validatePostUpdate(UserDetails userDetails, Long pathUserId, Long pathPostId, PostUpdate post, MultipartFile[] files) {
+        ResponseEntity<?> commonPostError = checkCommonPostCreateAndUpdate(userDetails, pathUserId, post, files);
+        if (commonPostError != null) {
+            return commonPostError;
+        }
         Long loggedInUserId = userService.findIdByUserDetails(userDetails);
-        if (loggedInUserId == null
-                || !loggedInUserId.equals(Long.valueOf(pathUserId))) {
-            return forbiddenErr();
+        Post existedPost = postService.findByPostId(pathPostId);
+        Long postOwnerId = existedPost.getUser().getId();
+
+        if (!loggedInUserId.equals(postOwnerId)) {
+            String error = "Your are not post owner";
+            BaseResponse<String, ?> response =
+                    BaseResponse.error(HttpStatus.CONFLICT, Constant.MSG_ERROR, error);
+            return new ResponseEntity<>(response, HttpStatus.CONFLICT);
         }
         return null;
     }
 
-    public ErrResp validateCreatePostPermission(UserDetails userDetails, String pathUserId, String bodyUserId) {
+    public ResponseEntity<?> validatePostDelete(UserDetails userDetails, Long pathUserId, Long pathPostId) {
         Long loggedInUserId = userService.findIdByUserDetails(userDetails);
-        if (loggedInUserId == null
-                || !loggedInUserId.equals(Long.valueOf(pathUserId))
-                || !loggedInUserId.equals(Long.valueOf(bodyUserId))) {
-            return forbiddenErr();
+        Post post = postService.findByPostId(pathPostId);
+        Long postOwnerId = post.getUser().getId();
+        if (!loggedInUserId.equals(pathUserId)) {
+            String error = "Logged in user id and target id are not the same";
+            BaseResponse<String, ?> response =
+                    BaseResponse.error(HttpStatus.CONFLICT, Constant.MSG_ERROR, error);
+            return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+        }
+
+        if (!loggedInUserId.equals(postOwnerId)) {
+            String error = "Your are not original poster";
+            BaseResponse<String, ?> response =
+                    BaseResponse.error(HttpStatus.CONFLICT, Constant.MSG_ERROR, error);
+            return new ResponseEntity<>(response, HttpStatus.CONFLICT);
         }
         return null;
     }
 
-    public ErrResp validateUpdatePostPermission(UserDetails userDetails,
-                                                String pathUserId,
-                                                String pathPostId,
-                                                String bodyUserId,
-                                                String bodyPostId) {
-        Long loggedInUserId = userService.findIdByUserDetails(userDetails);
-        if (loggedInUserId == null
-                || !loggedInUserId.equals(Long.valueOf(pathUserId))
-                || !loggedInUserId.equals(Long.valueOf(bodyUserId))
-                || !pathUserId.equals(bodyUserId)
-                || !pathPostId.equals(bodyPostId)) {
-            return forbiddenErr();
-        }
-        return null;
-    }
-
-    public ErrResp validateImgFile(MultipartFile file) {
+    public void validateImgFile(MultipartFile file) {
         if (file != null && !file.isEmpty()) {
             String mimeType = file.getContentType();
             boolean isImage = mimeType != null && mimeType.startsWith("image/");
             if (!isImage) {
-                Map<String, String> message = new HashMap<>();
-                message.put("File Error", "Invalid file format. Only image files are allowed.");
-                return new ErrResp(Constant.HTTP_STATUS_CODE_400, message);
+                throw new InvalidImageException();
             }
         }
-        return null;
     }
 
-    public ErrResp validateImgFile(MultipartFile[] files) {
+    public void validateImgFile(MultipartFile[] files) {
         if (files != null) {
             for (MultipartFile file : files) {
-                ErrResp errRsp = validateImgFile(file);
-                if (errRsp != null) {
-                    return errRsp;
-                }
+                validateImgFile(file);
             }
         }
-        return null;
     }
 
-    public ErrResp validateDeletePostPermission(UserDetails userDetails, String pathUserId, String pathPostId) {
+    public ResponseEntity<?> validateFriendRequestSent(UserDetails userDetails, Long receiverId) {
         Long loggedInUserId = userService.findIdByUserDetails(userDetails);
-        if (loggedInUserId == null
-                || !loggedInUserId.equals(Long.valueOf(pathUserId))
-                || !postService.existsByIdAndUser_Id(Long.valueOf(pathPostId), Long.valueOf(pathUserId))) {
-            return forbiddenErr();
+
+        if (loggedInUserId.equals(receiverId)) {
+            BaseResponse<String, ?> response =
+                    BaseResponse.error(HttpStatus.BAD_REQUEST, Constant.MSG_ERROR, Constant.ERR_FRIEND_REQUEST_REQUEST_DUPLICATE_SENDER_RECEIVER);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        if (friendshipService.existsFriendship(loggedInUserId, receiverId)) {
+            BaseResponse<String, ?> response =
+                    BaseResponse.error(HttpStatus.BAD_REQUEST, Constant.MSG_ERROR, Constant.ERR_FRIEND_REQUEST_FRIENDSHIP_EXIST);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        if (friendRequestService.existsByUserId(loggedInUserId, receiverId)) {
+            BaseResponse<String, ?> response =
+                    BaseResponse.error(HttpStatus.BAD_REQUEST, Constant.MSG_ERROR, Constant.ERR_FRIEND_REQUEST_REQUEST_EXIST);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
         return null;
     }
 
-    public ResponseEntity<?> validateFrdReqCrt(UserDetails userDetails, FrdReqCrt request) {
+    public ResponseEntity<?> validateFriendRequestDelete(UserDetails userDetails, Long requestId) {
         Long loggedInUserId = userService.findIdByUserDetails(userDetails);
-        if (loggedInUserId == null
-                || !loggedInUserId.equals(Long.valueOf(request.getSenderId()))) {
-            return createResponseEntity(forbiddenErr());
+        if (!friendRequestService.isValidDeletePermission(loggedInUserId, requestId)) {
+            BaseResponse<String, ?> response =
+                    BaseResponse.error(HttpStatus.FORBIDDEN, Constant.MSG_ERROR, Constant.ERR_FRIEND_REQUEST_REQUEST_NOT_VALID_CANCELER);
+            return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+        }
+        return null;
+    }
+
+    public ResponseEntity<?> validateFriendRequestAccept(UserDetails userDetails, Long requestId) {
+        Long loggedInUserId = userService.findIdByUserDetails(userDetails);
+        if (!friendRequestService.validAccepter(requestId, loggedInUserId)) {
+            BaseResponse<String, ?> response =
+                    BaseResponse.error(HttpStatus.FORBIDDEN, Constant.MSG_ERROR, Constant.ERR_FRIEND_REQUEST_REQUEST_NOT_VALID_ACCEPTER);
+            return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+        }
+        return null;
+    }
+
+    public ResponseEntity<?> validatePostCommentCreate(UserDetails userDetails, Long pathUserId, Long pathPostId) {
+        Long loggedInUserId = userService.findIdByUserDetails(userDetails);
+        return validateCommonPostComment(loggedInUserId, pathUserId, pathPostId, null);
+    }
+
+    public ResponseEntity<?> validatePostCommentUpdate(UserDetails userDetails, Long pathUserId, Long pathPostId, Long pathCommentId) {
+        Long loggedInUserId = userService.findIdByUserDetails(userDetails);
+        PostComment comment = postCommentService.findById(pathCommentId);
+        Long commenterId = comment.getUser().getId();
+
+        ResponseEntity<?> commonPostCommentError = validateCommonPostComment(loggedInUserId, pathUserId, pathPostId, pathCommentId);
+        if (commonPostCommentError != null) {
+            return commonPostCommentError;
         }
 
-        ErrResp friendRequestErr = existFriendRequestErr(request);
-        if (friendRequestErr != null) {
-            return createResponseEntity(friendRequestErr);
+        //Check if loggedInUserId does not match ID in comment's body
+        //Only original commenter can update
+        if (!loggedInUserId.equals(commenterId)) {
+            String error = loggedInUserId + " is not the comment owner";
+            BaseResponse<String, ?> response =
+                    BaseResponse.error(HttpStatus.FORBIDDEN, Constant.MSG_ERROR, error);
+            return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+        }
+        return null;
+    }
+
+    public ResponseEntity<?> validatePostCommentDelete(UserDetails userDetails, Long pathUserId, Long pathPostId, Long pathCommentId) {
+        Long loggedInUserId = userService.findIdByUserDetails(userDetails);
+        PostComment comment = postCommentService.findById(pathCommentId);
+        Long postOwnerId = comment.getPost().getUser().getId();
+        Long commenterId = comment.getUser().getId();
+
+        ResponseEntity<?> commonPostCommentError = validateCommonPostComment(loggedInUserId, pathUserId, pathPostId, pathCommentId);
+        if (commonPostCommentError != null) {
+            return commonPostCommentError;
         }
 
-        ErrResp friendshipErr = existFriendshipErr(request);
-        if (friendshipErr != null) {
-            return createResponseEntity(friendshipErr);
+        //Check if current user is the post owner
+        if (!loggedInUserId.equals(postOwnerId)) {
+            String error = loggedInUserId + " are not the post owner";
+            BaseResponse<String, ?> response =
+                    BaseResponse.error(HttpStatus.FORBIDDEN, Constant.MSG_ERROR, error);
+            return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
         }
 
-        if (request.getSenderId().equals(request.getReceiverId())) {
-            Map<String, String> message = new HashMap<>();
-            message.put("Error", "Sender and Receiver are the same user");
-            return new ResponseEntity<>(new ErrResp(Constant.HTTP_STATUS_CODE_400, message), HttpStatus.BAD_REQUEST);
+        //Check if current user is the original commenter
+        if (!loggedInUserId.equals(commenterId)) {
+            String error = commenterId + " are not the original commenter";
+            BaseResponse<String, ?> response =
+                    BaseResponse.error(HttpStatus.FORBIDDEN, Constant.MSG_ERROR, error);
+            return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
         }
 
         return null;
     }
 
-    public ResponseEntity<?> validateDltFrdReq(UserDetails userDetails, String requestId) {
-        ResponseEntity<?> commonFriendRequestErr = validateFriendRequest(requestId);
-        if (commonFriendRequestErr != null) {
-            return commonFriendRequestErr;
+    public ResponseEntity<?> validateLikeOrUnlikeAction(UserDetails userDetails, Long pathUserId, Long pathPostId) {
+        Post post = postService.findByPostId(pathPostId);
+        return checkCommonPostCreateAndUpdate(userDetails, pathUserId, post, null);
+    }
+
+    public ResponseEntity<?> validateNewsfeed(UserDetails userDetails, Long userId) {
+        Long loggedInUserId = userService.findIdByUserDetails(userDetails);
+        if (!loggedInUserId.equals(userId)) {
+            String error = "Current user id: " + loggedInUserId + " and path id: " + userId + " are not the same";
+            BaseResponse<String, ?> response =
+                    BaseResponse.error(HttpStatus.CONFLICT, Constant.MSG_ERROR, error);
+            return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+        }
+        return null;
+    }
+
+    public ResponseEntity<?> validateUserUpdate(UserDetails userDetails, Long userId) {
+        Long loggedInUserId = userService.findIdByUserDetails(userDetails);
+        if (!loggedInUserId.equals(userId)) {
+            String error = "Current user id: " + loggedInUserId + " and path id: " + userId + " are not the same";
+            BaseResponse<String, ?> response =
+                    BaseResponse.error(HttpStatus.CONFLICT, Constant.MSG_ERROR, error);
+            return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+        }
+        return null;
+    }
+
+    public ResponseEntity<?> validateReport(UserDetails userDetails, Long userId) {
+        Long loggedInUserId = userService.findIdByUserDetails(userDetails);
+        if (!loggedInUserId.equals(userId)) {
+            String error = "Current user id: " + loggedInUserId + " and path id: " + userId + " are not the same";
+            BaseResponse<String, ?> response =
+                    BaseResponse.error(HttpStatus.CONFLICT, Constant.MSG_ERROR, error);
+            return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+        }
+        return null;
+    }
+
+    public ResponseEntity<?> validateUnFriend(UserDetails userDetails, Long targetUserId) {
+        Long loggedInUserId = userService.findIdByUserDetails(userDetails);
+        if (loggedInUserId.equals(targetUserId)) {
+            BaseResponse<String, ?> response =
+                    BaseResponse.error(HttpStatus.CONFLICT, Constant.MSG_ERROR, Constant.ERR_FRIENDSHIP_DUPLICATE_SENDER_RECEIVER);
+            return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+        }
+
+        if (!friendshipService.existsFriendship(loggedInUserId, targetUserId)) {
+            BaseResponse<String, ?> response =
+                    BaseResponse.error(HttpStatus.CONFLICT, Constant.MSG_ERROR, Constant.ERR_FRIEND_REQUEST_FRIENDSHIP_NOT_EXIST);
+            return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+        }
+        return null;
+    }
+
+    private ResponseEntity<?> validateCommonPostComment(Long loggedInUserId, Long pathUserId, Long pathPostId, Long pathCommentId) {
+        Post post = postService.findByPostId(pathPostId);
+        Long postOwnerId = post.getUser().getId();
+
+        //Check if user ID in path variable does not match ID in the post's body
+        if (!pathUserId.equals(postOwnerId)) {
+            BaseResponse<String, ?> response =
+                    BaseResponse.error(HttpStatus.CONFLICT, Constant.MSG_ERROR, Constant.ERR_CONFLICT_PATH_VARIABLE_REQUEST_BODY);
+            return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+        }
+
+        //Check if post ID in path variable does not match ID in post's comment
+        if (pathCommentId != null) {
+            PostComment comment = postCommentService.findById(pathCommentId);
+            if (!pathPostId.equals(comment.getPost().getId())) {
+                BaseResponse<String, ?> response =
+                        BaseResponse.error(HttpStatus.CONFLICT, Constant.MSG_ERROR, Constant.ERR_CONFLICT_PATH_VARIABLE_REQUEST_BODY);
+                return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+            }
+        }
+
+        //Check if post is private and loggedInUser is not the owner
+        if (post.getPrivacy().equals(Privacy.PRIVATE)
+                && !loggedInUserId.equals(postOwnerId)) {
+            String error = "Post is private and " + loggedInUserId + ", " + postOwnerId + " are not same";
+            BaseResponse<String, ?> response = BaseResponse.error(HttpStatus.FORBIDDEN, Constant.MSG_ERROR, error);
+            return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+        }
+
+        //Check if post is for friend only but loggedInUser is not a friend
+        else if (post.getPrivacy().equals(Privacy.FRIENDS)
+                && (!friendshipService.existsFriendship(loggedInUserId, postOwnerId) && !loggedInUserId.equals(postOwnerId))) {
+            String error = loggedInUserId + ", " + postOwnerId + " are not friends";
+            BaseResponse<String, ?> response = BaseResponse.error(HttpStatus.FORBIDDEN, Constant.MSG_ERROR, error);
+            return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+        }
+        return null;
+    }
+
+    private ResponseEntity<?> checkCommonPostCreateAndUpdate(UserDetails userDetails, Long pathUserId, Object post, MultipartFile[] files) {
+        if (files == null && post == null) {
+            String error = "Post must contains at least content or image";
+            BaseResponse<String, ?> response =
+                    BaseResponse.error(HttpStatus.BAD_REQUEST, Constant.MSG_ERROR, error);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
         Long loggedInUserId = userService.findIdByUserDetails(userDetails);
-        if (loggedInUserId == null
-                || !friendRequestService.isValidDeletePermission(loggedInUserId)) {
-            return createResponseEntity(forbiddenErr());
-        }
-        return null;
-    }
-
-    public ResponseEntity<?> validateAcpFrdReq(UserDetails userDetails, String requestId) {
-        ResponseEntity<?> commonFriendRequestErr = validateFriendRequest(requestId);
-        if (commonFriendRequestErr != null) {
-            return commonFriendRequestErr;
-        }
-
-        Long loggedInUserId = userService.findIdByUserDetails(userDetails);
-        if (loggedInUserId == null
-                || !friendRequestService.validAccepter(Long.valueOf(requestId), loggedInUserId)) {
-            return createResponseEntity(forbiddenErr());
-        }
-        return null;
-    }
-
-    private ErrResp forbiddenErr() {
-        Map<String, String> message = new HashMap<>();
-        message.put("Access", "Forbidden");
-        return new ErrResp(Constant.HTTP_STATUS_CODE_403, message);
-    }
-
-    private ErrResp pathIdErr(String id) {
-        boolean match = id.matches("^[1-9]\\d*$");
-        if (id.isBlank() || !match) {
-            Map<String, String> message = new HashMap<>();
-            message.put("Id", "Invalid Id");
-            return new ErrResp(Constant.HTTP_STATUS_CODE_404, message);
-        }
-        return null;
-    }
-
-    private ErrResp existFriendRequestId(String id) {
-        if (!friendRequestService.existByRequestId(id)) {
-            Map<String, String> message = new HashMap<>();
-            message.put("Id", "Invalid Id");
-            return new ErrResp(Constant.HTTP_STATUS_CODE_404, message);
-        }
-        return null;
-    }
-
-    private ResponseEntity<?> createResponseEntity(ErrResp errResp) {
-        String status = errResp.getStatus();
-        return switch (status) {
-            case Constant.HTTP_STATUS_CODE_400 -> new ResponseEntity<>(errResp, HttpStatus.BAD_REQUEST);
-            case Constant.HTTP_STATUS_CODE_403 -> new ResponseEntity<>(errResp, HttpStatus.FORBIDDEN);
-            case Constant.HTTP_STATUS_CODE_404 -> new ResponseEntity<>(errResp, HttpStatus.NOT_FOUND);
-            default -> null;
-        };
-    }
-
-    private ErrResp existFriendRequestErr(FrdReqCrt reqCrt) {
-        String sender_id = reqCrt.getSenderId();
-        String receiver_id = reqCrt.getReceiverId();
-        if (friendRequestService.existsByUserId(sender_id, receiver_id)) {
-            Map<String, String> message = new HashMap<>();
-            message.put("Error", "Friend request is already sent");
-            return new ErrResp(Constant.HTTP_STATUS_CODE_400, message);
-        }
-        return null;
-    }
-
-    private ErrResp existFriendshipErr(FrdReqCrt reqCrt) {
-        String sender_id = reqCrt.getSenderId();
-        String receiver_id = reqCrt.getReceiverId();
-        if (friendshipService.existsFriendship(sender_id, receiver_id)) {
-            Map<String, String> message = new HashMap<>();
-            message.put("Error", "They are already friends");
-            return new ErrResp(Constant.HTTP_STATUS_CODE_400, message);
-        }
-        return null;
-    }
-
-    private ResponseEntity<?> validateFriendRequest(String requestId) {
-        ErrResp idError = pathIdErr(requestId);
-        if (idError != null) {
-            return createResponseEntity(idError);
-        }
-
-        ErrResp existRequestErr = existFriendRequestId(requestId);
-        if (existRequestErr != null) {
-            return createResponseEntity(existRequestErr);
+        if (!loggedInUserId.equals(pathUserId)) {
+            String error = "Logged in user id and target id are not the same";
+            BaseResponse<String, ?> response =
+                    BaseResponse.error(HttpStatus.CONFLICT, Constant.MSG_ERROR, error);
+            return new ResponseEntity<>(response, HttpStatus.CONFLICT);
         }
         return null;
     }

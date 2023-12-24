@@ -7,5 +7,5 @@ public interface IMailService {
 
     public void sendOTP(String email) throws MessagingException;
 
-    public void sendResetToken(String email) throws MessagingException;
+    public void sendPasswordResetToken(String email) throws MessagingException;
 }

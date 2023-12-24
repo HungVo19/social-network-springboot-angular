@@ -22,7 +22,6 @@ public class JwtProvider {
         Date now = new Date();
         Date exp = new Date(now.getTime() + Constant.JWT_EXPIRATION);
 
-
         return Jwts.builder()
                 .setSubject(authDetails.getUsername())
                 .setIssuer("Olympus Social Network")

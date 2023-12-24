@@ -1,16 +1,33 @@
 package com.olympus.service.impl;
 
-import com.olympus.dto.*;
+import com.olympus.dto.request.AccountLogin;
+import com.olympus.dto.request.AccountPasswordReset;
+import com.olympus.dto.request.AccountRegister;
+import com.olympus.dto.request.UserUpdate;
+import com.olympus.dto.response.CurrentUserProfile;
+import com.olympus.dto.response.OtherUserFriendRequest;
+import com.olympus.dto.response.OtherUserFriendship;
+import com.olympus.dto.response.OtherUserProfile;
+import com.olympus.entity.FriendRequest;
+import com.olympus.entity.Friendship;
 import com.olympus.entity.User;
-import com.olympus.mapper.UpdateUserMapper;
+import com.olympus.exception.UserNotFoundException;
+import com.olympus.mapper.CurrentUserProfileMapper;
+import com.olympus.mapper.OtherUserProfileMapper;
+import com.olympus.mapper.UserUpdateMapper;
 import com.olympus.repository.IUserRepository;
+import com.olympus.service.IFriendRequestService;
+import com.olympus.service.IFriendshipService;
+import com.olympus.service.IImageService;
 import com.olympus.service.IUserService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @Service
@@ -18,20 +35,30 @@ import java.util.Optional;
 public class UserServiceImpl implements IUserService {
     private final IUserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final UpdateUserMapper updateUserMapper;
+    private final UserUpdateMapper userUpdateMapper;
+    private final CurrentUserProfileMapper currentUserProfileMapper;
+    private final IImageService imageService;
+    private final IFriendRequestService friendRequestService;
+    private final IFriendshipService friendshipService;
+    private final OtherUserProfileMapper otherUserProfileMapper;
 
     @Autowired
     UserServiceImpl(PasswordEncoder passwordEncoder,
                     IUserRepository userRepository,
-                    UpdateUserMapper updateUserMapper) {
+                    UserUpdateMapper userUpdateMapper,
+                    CurrentUserProfileMapper currentUserProfileMapper,
+                    IImageService imageService,
+                    IFriendRequestService friendRequestService,
+                    IFriendshipService friendshipService,
+                    OtherUserProfileMapper otherUserProfileMapper) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
-        this.updateUserMapper = updateUserMapper;
-    }
-
-    @Override
-    public Optional<User> findUserByUserId(String id) {
-        return userRepository.findUserById(Long.valueOf(id));
+        this.userUpdateMapper = userUpdateMapper;
+        this.currentUserProfileMapper = currentUserProfileMapper;
+        this.imageService = imageService;
+        this.friendRequestService = friendRequestService;
+        this.friendshipService = friendshipService;
+        this.otherUserProfileMapper = otherUserProfileMapper;
     }
 
     @Override
@@ -40,20 +67,18 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public Long findIdByUserDetails(UserDetails userDetails) {
+    public java.lang.Long findIdByUserDetails(UserDetails userDetails) {
         String email = userDetails.getUsername();
         Optional<User> user = findUserByEmail(email);
         return user.map(User::getId).orElse(null);
     }
 
     @Override
-    public RegistrationResp register(RegistrationReq regUser) {
+    public Long register(AccountRegister accountRegister) {
         User user = new User();
-        user.setEmail(regUser.getEmail().trim().toLowerCase());
-        user.setPassword(passwordEncoder.encode(regUser.getPassword()));
-        User newUser = userRepository.save(user);
-        Long newId = newUser.getId();
-        return new RegistrationResp(newId);
+        user.setEmail(accountRegister.getEmail().trim().toLowerCase());
+        user.setPassword(passwordEncoder.encode(accountRegister.getPassword()));
+        return userRepository.save(user).getId();
     }
 
     @Override
@@ -62,9 +87,9 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public boolean existsUserByEmailAndPassword(LoginReq loginReq) {
-        String email = loginReq.getEmail().trim().toLowerCase();
-        String rawPassword = loginReq.getPassword();
+    public boolean existsUserByEmailAndPassword(AccountLogin accountLogin) {
+        String email = accountLogin.getEmail().trim().toLowerCase();
+        String rawPassword = accountLogin.getPassword();
         Optional<User> user = userRepository.findUserByEmail(email);
         if (user.isPresent()) {
             User existedUser = user.get();
@@ -75,15 +100,13 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public void updatePwd(ChangePwdReq request) {
-        String newPwd = request.getPassword();
+    public void updatePassword(AccountPasswordReset request) {
+        String newPassword = request.getPassword();
         String email = request.getEmail().trim().toLowerCase();
-        Optional<User> user = userRepository.findUserByEmail(email);
-        if (user.isPresent()) {
-            String encryptedPwd = passwordEncoder.encode(newPwd);
-            user.get().setPassword(encryptedPwd);
-            userRepository.save(user.get());
-        }
+        User user = userRepository.findUserByEmail(email).orElseThrow(() -> new UserNotFoundException(email + " not found"));
+        String encryptedPwd = passwordEncoder.encode(newPassword);
+        user.setPassword(encryptedPwd);
+        userRepository.save(user);
     }
 
     @Override
@@ -92,19 +115,46 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public Long updateUser(UpdateUserReq updateUser, String imageUrl) {
-        if (updateUser.getGender() != null) {
-            updateUser.setGender(updateUser.getGender().toUpperCase());
+    public java.lang.Long updateUser(Long userId, UserUpdate updateUser, MultipartFile file) throws IOException {
+        String imageUrl = "";
+        if (file != null) {
+            String fileName = imageService.save(file);
+            imageUrl = imageService.getImageUrl(fileName);
         }
-        if (updateUser.getStatus() != null) {
-            updateUser.setStatus(updateUser.getStatus().toUpperCase());
-        }
-        Long id = Long.parseLong(updateUser.getId());
-        User user = userRepository.findUserById(id).orElseThrow();
+
+        User user = userRepository.findUserById(userId).orElseThrow();
         if (!imageUrl.isEmpty()) {
             user.setAvatar(imageUrl);
         }
-        updateUserMapper.updateEntityFromDTO(updateUser, user);
+        userUpdateMapper.updateEntityFromDTO(updateUser, user);
         return userRepository.save(user).getId();
+    }
+
+    @Override
+    public CurrentUserProfile getCurrentUserProfile(Long userId) {
+        User user = userRepository.getReferenceById(userId);
+        return currentUserProfileMapper.toDTO(user);
+    }
+
+    @Override
+    public OtherUserProfile getOtherUserProfile(Long currentUserId, Long targetUserId) {
+        User targetUser = userRepository.getReferenceById(targetUserId);
+        OtherUserFriendship friendship = new OtherUserFriendship();
+        OtherUserFriendRequest friendRequest = new OtherUserFriendRequest();
+        if(friendshipService.existsFriendship(currentUserId,targetUserId)) {
+            Friendship existedFriendship = friendshipService.findByUserIds(currentUserId,targetUserId);
+            friendship.setFriendshipId(existedFriendship.getId());
+            friendship.setStatus(true);
+        }
+        FriendRequest existedFriendRequest = friendRequestService.findByUserIds(currentUserId, targetUserId);
+        if(existedFriendRequest != null) {
+            friendRequest.setRequestId(existedFriendRequest.getId());
+            friendRequest.setStatus(true);
+            friendRequest.setRole(friendRequestService.identifyRole(currentUserId, targetUserId));
+        }
+        OtherUserProfile profile = otherUserProfileMapper.toDTO(targetUser);
+        profile.setFriendship(friendship);
+        profile.setFriendRequest(friendRequest);
+        return profile;
     }
 }
