@@ -1,12 +1,12 @@
 package com.olympus.controller;
 
 import com.olympus.config.Constant;
-import com.olympus.dto.newsfeed.NewsfeedPostDTO;
 import com.olympus.dto.request.PostCreate;
 import com.olympus.dto.request.PostUpdate;
 import com.olympus.dto.response.BaseResponse;
-import com.olympus.dto.response.CurrentUserPost;
 import com.olympus.dto.response.OtherUserPost;
+import com.olympus.dto.response.curentUserPost.CurrentUserPost;
+import com.olympus.dto.response.newsfeed.NewsfeedPostDTO;
 import com.olympus.service.IFriendshipService;
 import com.olympus.service.IImageService;
 import com.olympus.service.IPostService;
@@ -42,7 +42,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/v1/users/{userId}")
 @CrossOrigin("*")
-@Tag(name = "Posts", description = "User's Posts Management APIs")
+@Tag(name = "6. Posts", description = "User's Posts Management APIs")
 @Validated
 public class PostController {
     private final AppValidator appValidator;
@@ -67,7 +67,7 @@ public class PostController {
     @GetMapping("/posts")
     @Operation(summary = "Get an user's posts")
     @ApiResponses({
-            @ApiResponse(responseCode = "201", content = {
+            @ApiResponse(responseCode = "200", content = {
                     @Content(schema =
                     @Schema(implementation = BaseResponse.class), mediaType = "application/json")})
     })
@@ -80,20 +80,48 @@ public class PostController {
         if (loggedInUserId.equals(userId)) {
             Page<CurrentUserPost> data = postService.getCurrentUserPosts(loggedInUserId, page, size);
             BaseResponse<Page<CurrentUserPost>, ?> response =
-                    BaseResponse.success(HttpStatus.OK, Constant.MSG_OK, data);
+                    BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_POST_GET_BY_USER, data);
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
 
         if (friendshipService.existsFriendship(loggedInUserId, userId)) {
             Page<OtherUserPost> data = postService.getFriendPosts(userId, page, size);
             BaseResponse<Page<OtherUserPost>, ?> response =
-                    BaseResponse.success(HttpStatus.OK, Constant.MSG_OK, data);
+                    BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_POST_GET_BY_USER, data);
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
 
         Page<OtherUserPost> data = postService.getOtherUserPosts(userId, page, size);
         BaseResponse<Page<OtherUserPost>, ?> response =
-                BaseResponse.success(HttpStatus.OK, Constant.MSG_OK, data);
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_POST_GET_BY_USER, data);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/posts/{postId}")
+    @Operation(summary = "Get a specific post")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", content = {
+                    @Content(schema =
+                    @Schema(implementation = BaseResponse.class), mediaType = "application/json")})
+    })
+    @SecurityRequirement(name = "Bearer")
+    public ResponseEntity<?> getSpecificPosts(@AuthenticationPrincipal UserDetails userDetails,
+                                              @PathVariable @Valid @ExistUserById Long userId,
+                                              @PathVariable @Valid @ExistByPostIdAndNotDeleted Long postId) {
+        Long loggedInUserId = userService.findIdByUserDetails(userDetails);
+        ResponseEntity<?> validationError = appValidator.validateGetSpecificPost(userDetails, userId, postId);
+        if (validationError != null) {
+            return validationError;
+        }
+        if (loggedInUserId.equals(userId)) {
+            CurrentUserPost post = postService.getCurrentUserSpecificPost(userId, postId);
+            BaseResponse<CurrentUserPost, ?> response =
+                    BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_POST_GET_BY_USER, post);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }
+        OtherUserPost post = postService.getOtherUserSpecificPost(userId, postId);
+        BaseResponse<OtherUserPost, ?> response =
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_POST_GET_BY_USER, post);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -125,7 +153,7 @@ public class PostController {
         Map<String, Long> data = new HashMap<>();
         data.put("id", newPostId);
         BaseResponse<Map<String, Long>, ?> response =
-                BaseResponse.success(HttpStatus.CREATED, Constant.MSG_SUCCESS_POST_CREATE, data);
+                BaseResponse.success(HttpStatus.CREATED, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_POST_CREATE, data);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -143,10 +171,10 @@ public class PostController {
     @SecurityRequirement(name = "Bearer")
     public ResponseEntity<?> updatePost(@AuthenticationPrincipal UserDetails userDetails,
                                         @PathVariable @Valid @ExistUserById Long userId,
-                                        @PathVariable @Valid
-                                        @ExistByPostIdAndNotDeleted Long postId,
+                                        @PathVariable @Valid @ExistByPostIdAndNotDeleted Long postId,
                                         @RequestPart @Valid PostUpdate post,
-                                        @RequestPart(required = false) MultipartFile[] files) throws IOException {
+                                        @RequestPart(required = false) MultipartFile[] files)
+            throws IOException {
         ResponseEntity<?> validationError = appValidator.validatePostUpdate(userDetails, userId, postId, post, files);
         if (validationError != null) {
             return validationError;
@@ -158,14 +186,14 @@ public class PostController {
         Map<String, Long> data = new HashMap<>();
         data.put("updatedPostId", updatedPostId);
         BaseResponse<Map<String, Long>, ?> response =
-                BaseResponse.success(HttpStatus.CREATED, Constant.MSG_SUCCESS_POST_UPDATE, data);
+                BaseResponse.success(HttpStatus.CREATED, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_POST_UPDATE, data);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/posts/{postId}")
     @Operation(summary = "Delete an existing post")
     @ApiResponses({
-            @ApiResponse(responseCode = "20", content = {
+            @ApiResponse(responseCode = "200", content = {
                     @Content(schema =
                     @Schema(implementation = BaseResponse.class), mediaType = "application/json")})
     })
@@ -179,18 +207,19 @@ public class PostController {
         }
         postService.deletePost(postId);
         BaseResponse<String, ?> response =
-                BaseResponse.success(HttpStatus.OK, Constant.MSG_OK, Constant.MSG_SUCCESS_POST_DELETE);
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_OK, Constant.MSG_SUCCESS_POST_DELETE);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/newsfeed")
+    @Operation(summary = "Get newsfeed")
     @ApiResponses({
             @ApiResponse(responseCode = "200", content = {
                     @Content(schema =
                     @Schema(implementation = BaseResponse.class), mediaType = "application/json")})
     })
     @SecurityRequirement(name = "Bearer")
-    ResponseEntity<?> getTimeline(@AuthenticationPrincipal UserDetails userDetails,
+    ResponseEntity<?> getNewsfeed(@AuthenticationPrincipal UserDetails userDetails,
                                   @PathVariable @Valid @ExistUserById Long userId,
                                   @RequestParam(defaultValue = "0") @Valid int page,
                                   @RequestParam(defaultValue = "5") @Valid int size) {
@@ -199,8 +228,8 @@ public class PostController {
             return validationError;
         }
         Page<NewsfeedPostDTO> data = postService.getNewsfeed(userId, page, size);
-        BaseResponse<Page<NewsfeedPostDTO>,?> response =
-                BaseResponse.success(HttpStatus.OK, Constant.MSG_OK, data);
+        BaseResponse<Page<NewsfeedPostDTO>, ?> response =
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_POST_GET_NEWSFEED, data);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

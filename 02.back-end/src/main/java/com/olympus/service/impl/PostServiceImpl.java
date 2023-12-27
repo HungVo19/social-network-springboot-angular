@@ -1,11 +1,12 @@
 package com.olympus.service.impl;
 
-import com.olympus.dto.newsfeed.NewsfeedPostDTO;
 import com.olympus.dto.request.PostCreate;
 import com.olympus.dto.request.PostUpdate;
-import com.olympus.dto.response.CurrentUserPost;
 import com.olympus.dto.response.OtherUserPost;
+import com.olympus.dto.response.curentUserPost.CurrentUserPost;
+import com.olympus.dto.response.newsfeed.NewsfeedPostDTO;
 import com.olympus.entity.Post;
+import com.olympus.entity.PostComment;
 import com.olympus.entity.User;
 import com.olympus.mapper.*;
 import com.olympus.repository.IPostRepository;
@@ -14,10 +15,7 @@ import com.olympus.service.IPostImageService;
 import com.olympus.service.IPostService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,7 +29,7 @@ public class PostServiceImpl implements IPostService {
     private final PostUpdateMapper postUpdateMapper;
     private final CurrentUserPostMapper currentUserPostMapper;
     private final IFriendshipService friendshipService;
-    private final NewsfeedPostDTOMapper newsfeedPostDTOMapper;
+    private final NewsfeedPostMapper newsfeedPostMapper;
     private final OtherUserPostMapper otherUserPostMapper;
 
     @Autowired
@@ -41,7 +39,7 @@ public class PostServiceImpl implements IPostService {
                            PostUpdateMapper postUpdateMapper,
                            CurrentUserPostMapper currentUserPostMapper,
                            IFriendshipService friendshipService,
-                           NewsfeedPostDTOMapper newsfeedPostDTOMapper,
+                           NewsfeedPostMapper newsfeedPostMapper,
                            OtherUserPostMapper otherUserPostMapper) {
         this.postRepository = postRepository;
         this.postCreateMapper = postCreateMapper;
@@ -49,7 +47,7 @@ public class PostServiceImpl implements IPostService {
         this.postUpdateMapper = postUpdateMapper;
         this.currentUserPostMapper = currentUserPostMapper;
         this.friendshipService = friendshipService;
-        this.newsfeedPostDTOMapper = newsfeedPostDTOMapper;
+        this.newsfeedPostMapper = newsfeedPostMapper;
         this.otherUserPostMapper = otherUserPostMapper;
     }
 
@@ -104,28 +102,30 @@ public class PostServiceImpl implements IPostService {
 
     @Override
     public Page<NewsfeedPostDTO> getNewsfeed(Long userId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC,"createdTime"));
         List<Long> friendIds = friendshipService.getListFriendIds(userId);
         if (friendIds == null || friendIds.isEmpty()) {
             return Page.empty(pageable);
         }
         Page<Post> postsPage = postRepository.findPostByFriendsAndDeleteStatusAndPrivacy(friendIds, pageable);
-        List<NewsfeedPostDTO> newsfeed = newsfeedPostDTOMapper.toListDTO(postsPage.getContent());
+        List<NewsfeedPostDTO> newsfeed = newsfeedPostMapper.toListDTO(postsPage.getContent());
         return new PageImpl<>(newsfeed, pageable, postsPage.getTotalElements());
     }
 
     @Override
     public Page<CurrentUserPost> getCurrentUserPosts(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Post> posts = postRepository.getAllByUser_IdAndDeleteStatusIsFalseOrderByCreatedTimeDesc(userId, pageable);
+        Page<Post> posts = postRepository.getCurrentUserPosts(userId, pageable);
+        filterDeletedComments(posts);
         List<CurrentUserPost> currentUserPosts = currentUserPostMapper.toListDTOs(posts.getContent());
         return new PageImpl<>(currentUserPosts, pageable, posts.getTotalElements());
     }
 
     @Override
     public Page<OtherUserPost> getFriendPosts(Long userId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdTime"));
         Page<Post> posts = postRepository.findFriendUserPost(userId, pageable);
+        filterDeletedComments(posts);
         List<OtherUserPost> friendUserPosts = otherUserPostMapper.toListDTOs(posts.getContent());
         return new PageImpl<>(friendUserPosts, pageable, posts.getTotalElements());
     }
@@ -134,7 +134,34 @@ public class PostServiceImpl implements IPostService {
     public Page<OtherUserPost> getOtherUserPosts(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Post> posts = postRepository.findOtherUserPost(userId, pageable);
+        filterDeletedComments(posts);
         List<OtherUserPost> friendUserPosts = otherUserPostMapper.toListDTOs(posts.getContent());
         return new PageImpl<>(friendUserPosts, pageable, posts.getTotalElements());
+    }
+
+    @Override
+    public CurrentUserPost getCurrentUserSpecificPost(Long userId, Long postId) {
+        Post post = postRepository.getSpecificPost(userId, postId);
+        return currentUserPostMapper.toDTO(post);
+    }
+
+    @Override
+    public OtherUserPost getFriendSpecificPost(Long userId, Long postId) {
+        Post post = postRepository.getSpecificPost(userId, postId);
+        return otherUserPostMapper.toDTO(post);
+    }
+
+    @Override
+    public OtherUserPost getOtherUserSpecificPost(Long userId, Long postId) {
+        Post post = postRepository.getSpecificPost(userId, postId);
+        return otherUserPostMapper.toDTO(post);
+    }
+
+    private static void filterDeletedComments(Page<Post> posts) {
+        for(Post p: posts) {
+            List<PostComment> comments = p.getComments().stream().filter(c -> !c.isDeleteStatus())
+                    .toList();
+            p.setComments(comments);
+        }
     }
 }

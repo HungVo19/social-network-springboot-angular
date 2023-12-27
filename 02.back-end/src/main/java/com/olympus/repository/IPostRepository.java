@@ -14,10 +14,14 @@ import java.util.List;
 public interface IPostRepository extends JpaRepository<Post, Long> {
     boolean existsByIdAndUser_Id(Long postId, Long userId);
 
-    Page<Post> getAllByUser_IdAndDeleteStatusIsFalseOrderByCreatedTimeDesc(Long userId, Pageable pageable);
+    @Query("select p from Post p where p.user.id = :userId and p.deleteStatus = false order by p.createdTime desc")
+    Page<Post> getCurrentUserPosts(Long userId, Pageable pageable);
+
+    @Query("select p from Post p where p.user.id = :userId and p.id = :postId and p.deleteStatus = false")
+    Post getSpecificPost(Long userId, Long postId);
 
     @Query("SELECT p from Post p " +
-            "where p.user.id in :friendIds and p.deleteStatus = false  and p.privacy = 'FRIENDS' " +
+            "where p.user.id in :friendIds and p.deleteStatus = false  and (p.privacy = 'FRIENDS' or p.privacy = 'PUBLIC') " +
             "order by p.createdTime desc ")
     Page<Post> findPostByFriendsAndDeleteStatusAndPrivacy(List<Long> friendIds, Pageable pageable);
 

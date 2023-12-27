@@ -1,6 +1,6 @@
 package com.olympus.service;
 
-import com.olympus.dto.friendship.FriendDTO;
+import com.olympus.dto.response.friendship.FriendDTO;
 import com.olympus.entity.Friendship;
 
 import java.util.List;

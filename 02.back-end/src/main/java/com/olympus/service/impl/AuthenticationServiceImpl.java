@@ -27,34 +27,12 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
     }
 
     @Override
-    public boolean existsByUserIdAndCode(Authentication authentication) {
-        Long userId = authentication.getUser().getId();
-        String code = authentication.getCode();
-        Optional<Authentication> authOptional = authenticationRepository.findByUser(authentication.getUser());
-        if (authOptional.isPresent() && authenticationRepository.existsByUserIdAndCode(userId, code)) {
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime exprTime = authOptional.get().getCreatedTime();
-            return now.isBefore(exprTime.plusHours(5));
-        }
-        return false;
-    }
-
-    @Override
-    public void deleteByUser(User user) {
-        authenticationRepository.deleteByUser(user);
-    }
-
-    @Override
-    public void save(Authentication authentication) {
-        authenticationRepository.save(authentication);
-    }
-
-    @Override
-    public void createAuth(User user, String code) {
+    public void createAuthentication(User user, String code) {
         String hashedCode = passwordEncoder.encode(code);
         Optional<Authentication> storedAuth = authenticationRepository.findByUser(user);
         if (storedAuth.isPresent()) {
             storedAuth.get().setCode(hashedCode);
+            storedAuth.get().setCreatedTime(LocalDateTime.now());
             authenticationRepository.save(storedAuth.get());
         } else {
             Authentication authentication = new Authentication(user, hashedCode);
@@ -65,7 +43,7 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
     @Override
     public void reset(String email) {
         Authentication authentication = authenticationRepository.
-                findAuthenticationByUser_Email(email).orElseThrow(()-> new UserNotFoundException(email));
+                findAuthenticationByUser_Email(email).orElseThrow(() -> new UserNotFoundException(email));
         authentication.setCode("");
         authenticationRepository.save(authentication);
     }

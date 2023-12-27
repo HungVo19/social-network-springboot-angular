@@ -1,10 +1,10 @@
 package com.olympus.service;
 
-import com.olympus.dto.newsfeed.NewsfeedPostDTO;
 import com.olympus.dto.request.PostCreate;
 import com.olympus.dto.request.PostUpdate;
-import com.olympus.dto.response.CurrentUserPost;
 import com.olympus.dto.response.OtherUserPost;
+import com.olympus.dto.response.curentUserPost.CurrentUserPost;
+import com.olympus.dto.response.newsfeed.NewsfeedPostDTO;
 import com.olympus.entity.Post;
 import org.springframework.data.domain.Page;
 
@@ -21,4 +21,10 @@ public interface IPostService {
     Page<CurrentUserPost> getCurrentUserPosts(Long loggedInUserId, int page, int size);
     Page<OtherUserPost> getFriendPosts(Long userId, int page, int size);
     Page<OtherUserPost> getOtherUserPosts(Long userId, int page, int size);
+
+    CurrentUserPost getCurrentUserSpecificPost(Long userId, Long postId);
+
+    OtherUserPost getFriendSpecificPost(Long userId, Long postId);
+
+    OtherUserPost getOtherUserSpecificPost(Long userId, Long postId);
 }

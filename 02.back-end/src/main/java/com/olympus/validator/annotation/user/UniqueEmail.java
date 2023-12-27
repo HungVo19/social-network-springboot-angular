@@ -6,7 +6,7 @@ import jakarta.validation.Payload;
 import java.lang.annotation.*;
 
 /**
- * Annotation kiem tra email da ton tai trong db
+ * Annotation check email is already in use
  */
 @Documented
 @Constraint(validatedBy = UniqueEmailValidator.class)

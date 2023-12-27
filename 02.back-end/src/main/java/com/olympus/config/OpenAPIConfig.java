@@ -19,6 +19,9 @@ import java.util.List;
 @Configuration
 public class OpenAPIConfig {
 
+    @Value("${olympus.openapi.dev-url}")
+    private String devUrl;
+
     //handle file upload with json in swagger-ui
     @Bean
     public MappingJackson2HttpMessageConverter octetStreamJsonConverter() {
@@ -27,9 +30,6 @@ public class OpenAPIConfig {
                 new MediaType("application", "json")));
         return converter;
     }
-
-    @Value("${olympus.openapi.dev-url}")
-    private String devUrl;
 
     @Bean
     public OpenAPI myOpenAPI() {

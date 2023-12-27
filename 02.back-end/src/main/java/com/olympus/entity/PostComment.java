@@ -1,13 +1,17 @@
 package com.olympus.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+//@Data
 @Table(name = "post_comment")
+@Getter
+@Setter
+//@ToString(exclude = {"post", "user"}) // exclude fields to avoid recursion
 public class PostComment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

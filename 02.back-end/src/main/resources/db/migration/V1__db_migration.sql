@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS `post`
 (
     `post_id`       BIGINT   NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `user_id`       BIGINT   NOT NULL,
-    `content`       LONGTEXT NOT NULL,
+    `content`       LONGTEXT,
     `delete_status` BOOLEAN  NOT NULL                   DEFAULT (false),
     `privacy`       ENUM ('PRIVATE','FRIENDS','PUBLIC') DEFAULT 'PUBLIC' NOT NULL,
     `created_time`  DATETIME NOT NULL,
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS `friendship`
     `created_time`  DATE,
     FOREIGN KEY (`user1`) REFERENCES user (`user_id`),
     FOREIGN KEY (`user2`) REFERENCES user (`user_id`),
-    UNIQUE (`user1`,`user2`)
+    UNIQUE (`user1`, `user2`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = UTF8mb4;
 
@@ -86,7 +86,7 @@ CREATE TABLE IF NOT EXISTS `post_comment`
     `comment_id`    BIGINT   NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `post_id`       BIGINT   NOT NULL,
     `user_id`       BIGINT   NOT NULL,
-    `content`       LONGTEXT NOT NULL,
+    `content`       LONGTEXT,
     `created_time`  DATETIME NOT NULL,
     `updated_time`  DATETIME NOT NULL,
     `delete_status` BOOLEAN  NOT NULL DEFAULT false,
@@ -97,9 +97,9 @@ CREATE TABLE IF NOT EXISTS `post_comment`
 
 CREATE TABLE IF NOT EXISTS `post_like`
 (
-    `like_id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    `post_id` BIGINT NOT NULL,
-    `user_id` BIGINT NOT NULL,
+    `like_id`      BIGINT   NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    `post_id`      BIGINT   NOT NULL,
+    `user_id`      BIGINT   NOT NULL,
     `created_time` DATETIME NOT NULL,
     FOREIGN KEY (`post_id`) REFERENCES post (`post_id`),
     FOREIGN KEY (`user_id`) REFERENCES user (`user_id`),
@@ -113,3 +113,10 @@ Insert Into `user` (email, password)
 values ('user2@email', '$2a$10$CkYKFccF/n1ZLD2sdFj5YOGN8jkfSGVtQTSs8U4geTTO0GFGfmKW6');
 Insert Into `user` (email, password)
 values ('user3@email', '$2a$10$CkYKFccF/n1ZLD2sdFj5YOGN8jkfSGVtQTSs8U4geTTO0GFGfmKW6');
+
+INSERT INTO `authentication` (user_id, code, created_time)
+values (1, '', '2023-12-26 10:26:23');
+INSERT INTO `authentication` (user_id, code, created_time)
+values (2, '', '2023-12-26 10:26:23');
+INSERT INTO `authentication` (user_id, code, created_time)
+values (3, '', '2023-12-26 10:26:23')

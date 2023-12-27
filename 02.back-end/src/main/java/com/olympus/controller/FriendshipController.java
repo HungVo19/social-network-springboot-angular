@@ -1,8 +1,8 @@
 package com.olympus.controller;
 
 import com.olympus.config.Constant;
-import com.olympus.dto.friendship.FriendDTO;
 import com.olympus.dto.response.BaseResponse;
+import com.olympus.dto.response.friendship.FriendDTO;
 import com.olympus.service.IFriendshipService;
 import com.olympus.service.IUserService;
 import com.olympus.validator.AppValidator;
@@ -28,7 +28,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/friendship")
 @CrossOrigin("*")
-@Tag(name = "Friendship", description = "User's friendship Management APIs")
+@Tag(name = "5. Friendship", description = "User's friendship Management APIs")
 @Validated
 public class FriendshipController {
     private final IFriendshipService friendshipService;
@@ -57,7 +57,7 @@ public class FriendshipController {
         Long userId = userService.findIdByUserDetails(userDetails);
         List<FriendDTO> data = friendshipService.getFriendsList(userId);
         BaseResponse<List<FriendDTO>, ?> response =
-                BaseResponse.success(HttpStatus.OK, Constant.MSG_OK, data);
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_FRIENDSHIP_GET_LIST, data);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -78,7 +78,7 @@ public class FriendshipController {
         Long loggedInUserId = userService.findIdByUserDetails(userDetails);
         friendshipService.unFriend(loggedInUserId, userId);
         BaseResponse<String, ?> response =
-                BaseResponse.success(HttpStatus.OK, Constant.MSG_OK, Constant.MSG_SUCCESS_FRIENDSHIP_DELETE);
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_FRIENDSHIP_DELETE, HttpStatus.NO_CONTENT.name());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

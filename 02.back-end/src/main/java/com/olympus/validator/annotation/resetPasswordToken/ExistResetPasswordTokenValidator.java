@@ -1,11 +1,12 @@
 package com.olympus.validator.annotation.resetPasswordToken;
 
+import com.olympus.dto.request.AccountPasswordResetToken;
 import com.olympus.service.IResetPwdTokenService;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class ExistResetPasswordTokenValidator implements ConstraintValidator<ExistResetPasswordToken, String> {
+public class ExistResetPasswordTokenValidator implements ConstraintValidator<ExistResetPasswordToken, AccountPasswordResetToken> {
     private final IResetPwdTokenService resetPwdTokenService;
 
     @Autowired
@@ -14,7 +15,7 @@ public class ExistResetPasswordTokenValidator implements ConstraintValidator<Exi
     }
 
     @Override
-    public boolean isValid(String token, ConstraintValidatorContext constraintValidatorContext) {
-        return !token.isBlank() && resetPwdTokenService.existByToken(token);
+    public boolean isValid(AccountPasswordResetToken resetPwdToken, ConstraintValidatorContext constraintValidatorContext) {
+        return resetPwdTokenService.existByTokenAndEmail(resetPwdToken.getToken(), resetPwdToken.getEmail());
     }
 }

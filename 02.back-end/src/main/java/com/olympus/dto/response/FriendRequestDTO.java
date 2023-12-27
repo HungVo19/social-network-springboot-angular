@@ -21,6 +21,8 @@ public class FriendRequestDTO {
     private String gender;
     private String status;
 
+    public FriendRequestDTO(){}
+
     public FriendRequestDTO(Long friendRequestId, Long userId, String avatar,
                             String firstName, String lastName, LocalDate birthDate,
                             String phoneNumber, String currentAddress, String occupation,

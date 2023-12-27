@@ -43,14 +43,10 @@ public class UserServiceImpl implements IUserService {
     private final OtherUserProfileMapper otherUserProfileMapper;
 
     @Autowired
-    UserServiceImpl(PasswordEncoder passwordEncoder,
-                    IUserRepository userRepository,
-                    UserUpdateMapper userUpdateMapper,
-                    CurrentUserProfileMapper currentUserProfileMapper,
-                    IImageService imageService,
-                    IFriendRequestService friendRequestService,
-                    IFriendshipService friendshipService,
-                    OtherUserProfileMapper otherUserProfileMapper) {
+    UserServiceImpl(PasswordEncoder passwordEncoder, IUserRepository userRepository,
+                    UserUpdateMapper userUpdateMapper, CurrentUserProfileMapper currentUserProfileMapper,
+                    IImageService imageService, IFriendRequestService friendRequestService,
+                    IFriendshipService friendshipService, OtherUserProfileMapper otherUserProfileMapper) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.userUpdateMapper = userUpdateMapper;
@@ -67,7 +63,7 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public java.lang.Long findIdByUserDetails(UserDetails userDetails) {
+    public Long findIdByUserDetails(UserDetails userDetails) {
         String email = userDetails.getUsername();
         Optional<User> user = findUserByEmail(email);
         return user.map(User::getId).orElse(null);
@@ -104,6 +100,9 @@ public class UserServiceImpl implements IUserService {
         String newPassword = request.getPassword();
         String email = request.getEmail().trim().toLowerCase();
         User user = userRepository.findUserByEmail(email).orElseThrow(() -> new UserNotFoundException(email + " not found"));
+        if (user.isDeleteStatus()) {
+            throw new UserNotFoundException(email + " not found");
+        }
         String encryptedPwd = passwordEncoder.encode(newPassword);
         user.setPassword(encryptedPwd);
         userRepository.save(user);
@@ -141,13 +140,13 @@ public class UserServiceImpl implements IUserService {
         User targetUser = userRepository.getReferenceById(targetUserId);
         OtherUserFriendship friendship = new OtherUserFriendship();
         OtherUserFriendRequest friendRequest = new OtherUserFriendRequest();
-        if(friendshipService.existsFriendship(currentUserId,targetUserId)) {
-            Friendship existedFriendship = friendshipService.findByUserIds(currentUserId,targetUserId);
+        if (friendshipService.existsFriendship(currentUserId, targetUserId)) {
+            Friendship existedFriendship = friendshipService.findByUserIds(currentUserId, targetUserId);
             friendship.setFriendshipId(existedFriendship.getId());
             friendship.setStatus(true);
         }
         FriendRequest existedFriendRequest = friendRequestService.findByUserIds(currentUserId, targetUserId);
-        if(existedFriendRequest != null) {
+        if (existedFriendRequest != null) {
             friendRequest.setRequestId(existedFriendRequest.getId());
             friendRequest.setStatus(true);
             friendRequest.setRole(friendRequestService.identifyRole(currentUserId, targetUserId));

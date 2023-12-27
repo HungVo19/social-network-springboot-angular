@@ -33,13 +33,7 @@ public class FriendRequestServiceImpl implements IFriendRequestService {
 
     @Override
     public boolean isValidDeletePermission(Long userId, Long requestId) {
-        return friendRequestRepository.checkDeletePermission(userId, requestId) != 1;
-    }
-
-    @Override
-    public boolean existByRequestId(String requestId) {
-        Long id = Long.valueOf(requestId);
-        return friendRequestRepository.existsById(id);
+        return friendRequestRepository.checkDeletePermission(userId, requestId) == 1;
     }
 
     @Override

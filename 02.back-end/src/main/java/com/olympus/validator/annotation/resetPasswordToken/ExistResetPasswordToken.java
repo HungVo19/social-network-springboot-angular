@@ -12,7 +12,7 @@ import static java.lang.annotation.ElementType.*;
 
 @Documented
 @Constraint(validatedBy = ExistResetPasswordTokenValidator.class)
-@Target({FIELD, METHOD, PARAMETER})
+@Target({FIELD, METHOD, PARAMETER, TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ExistResetPasswordToken {
     String message() default "Token is invalid";

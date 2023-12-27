@@ -1,6 +1,5 @@
 package com.olympus.service;
 
-import com.olympus.dto.request.FriendRequestSent;
 import com.olympus.dto.response.FriendRequestDTO;
 import com.olympus.entity.FriendRequest;
 
@@ -11,7 +10,6 @@ public interface IFriendRequestService {
     Long createRequest(Long senderId, Long receiverId);
     boolean isValidDeletePermission(Long userId, Long requestId);
     void deleteRequest(Long requestId);
-    boolean existByRequestId(String requestId);
     boolean validAccepter(Long requestId, Long userId);
     FriendRequest findById(long requestId);
     boolean existByRequestId(long id);

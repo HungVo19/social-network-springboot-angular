@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping
 @CrossOrigin("*")
-@Tag(name = "Post Likes", description = "Post's Likes Management APIs")
+@Tag(name = "8. Post Likes", description = "Post's Likes Management APIs")
 @Validated
 public class LikeController {
     private final AppValidator appValidator;
@@ -55,8 +55,8 @@ public class LikeController {
         }
         Long loggedInUserId = userService.findIdByUserDetails(userDetails);
         postLikeService.likeOrUnlike(loggedInUserId, postId);
-        BaseResponse<String,?> response =
-                BaseResponse.success(HttpStatus.OK, Constant.MSG_OK, "like or unlike successfully");
+        BaseResponse<String, ?> response =
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_LIKE_UNLIKE, HttpStatus.NO_CONTENT.name());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

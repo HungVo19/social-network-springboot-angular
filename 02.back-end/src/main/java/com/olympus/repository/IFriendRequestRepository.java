@@ -2,7 +2,6 @@ package com.olympus.repository;
 
 import com.olympus.dto.response.FriendRequestDTO;
 import com.olympus.entity.FriendRequest;
-import com.olympus.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

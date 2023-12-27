@@ -1,6 +1,6 @@
 package com.olympus.service.impl;
 
-import com.olympus.dto.friendship.FriendDTO;
+import com.olympus.dto.response.friendship.FriendDTO;
 import com.olympus.entity.FriendRequest;
 import com.olympus.entity.Friendship;
 import com.olympus.entity.User;

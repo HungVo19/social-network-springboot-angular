@@ -3,9 +3,10 @@ package com.olympus.controller;
 import com.olympus.config.Constant;
 import com.olympus.dto.request.*;
 import com.olympus.dto.response.BaseResponse;
-import com.olympus.service.IAuthenticationService;
 import com.olympus.service.IMailService;
+import com.olympus.service.IResetPwdTokenService;
 import com.olympus.service.IUserService;
+import com.olympus.validator.annotation.resetPasswordToken.ValidResetPasswordToken;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,20 +28,18 @@ import java.util.Map;
 @RestController
 @RequestMapping("/v1/account")
 @CrossOrigin("*")
-@Tag(name = "Account", description = "User's account management APIs")
+@Tag(name = "1. Account", description = "User's account management APIs")
 @Validated
 public class AccountController {
     private final IUserService userService;
     private final IMailService mailService;
-    private final IAuthenticationService authenticationService;
+    private final IResetPwdTokenService resetPwdTokenService;
 
     @Autowired
-    public AccountController(IUserService userService,
-                             IMailService mailService,
-                             IAuthenticationService authenticationService) {
+    public AccountController(IUserService userService, IMailService mailService, IResetPwdTokenService resetPwdTokenService) {
         this.userService = userService;
         this.mailService = mailService;
-        this.authenticationService = authenticationService;
+        this.resetPwdTokenService = resetPwdTokenService;
     }
 
     @PostMapping(value = "/register")
@@ -54,9 +53,9 @@ public class AccountController {
     public ResponseEntity<?> register(@RequestBody @Valid AccountRegister accountRegister) {
         Long newUserId = userService.register(accountRegister);
         Map<String, Long> data = new HashMap<>();
-        data.put("id", newUserId);
+        data.put("new user id", newUserId);
         BaseResponse<Map<String, Long>, ?> response =
-                BaseResponse.success(HttpStatus.CREATED, Constant.MSG_SUCCESS_ACCOUNT_REGISTER, data);
+                BaseResponse.success(HttpStatus.CREATED, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_ACCOUNT_REGISTER, data);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -70,11 +69,11 @@ public class AccountController {
     @SecurityRequirements
     public ResponseEntity<?> login(@RequestBody @Valid AccountLogin accountLogin) throws MessagingException {
         String email = accountLogin.getEmail();
-        mailService.sendOTP(email);
+        mailService.sendLoginOTP(email);
         Map<String, String> data = new HashMap<>();
         data.put("email", email);
         BaseResponse<Map<String, String>, ?> response =
-                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS_ACCOUNT_OTP_SENT, data);
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_ACCOUNT_OTP_SENT, data);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -92,7 +91,7 @@ public class AccountController {
         Map<String, String> data = new HashMap<>();
         data.put("email", email);
         BaseResponse<Map<String, String>, ?> response =
-                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS_ACCOUNT_PWD_RESET_TOKEN_SENT, data);
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_ACCOUNT_PWD_RESET_TOKEN_SENT, data);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -105,9 +104,23 @@ public class AccountController {
     })
     @SecurityRequirements
     public ResponseEntity<?> validateResetPasswordToken(@RequestBody @Valid AccountPasswordResetToken token) {
+        resetPwdTokenService.reset(token);
         BaseResponse<String, ?> response =
-                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS_ACCOUNT_PWD_RESET_TOKEN_VALIDATE, HttpStatus.NO_CONTENT.name());
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_ACCOUNT_PWD_RESET_TOKEN_VALIDATE, HttpStatus.NO_CONTENT.name());
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/reset-password")
+    @Operation(summary = "Validate reset password token")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", content = {
+                    @Content(schema =
+                    @Schema(implementation = BaseResponse.class), mediaType = "application/json")}),
+    })
+    @SecurityRequirements
+    public String validateResetPwdToken(@RequestParam(name = "token") @Valid @ValidResetPasswordToken String token) {
+        resetPwdTokenService.reset(token);
+        return "Token is valid";
     }
 
     @PostMapping("/reset-password")
@@ -121,7 +134,7 @@ public class AccountController {
     public ResponseEntity<?> resetPassword(@RequestBody @Valid AccountPasswordReset request) {
         userService.updatePassword(request);
         BaseResponse<String, ?> response =
-                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS_ACCOUNT_PWD_RESET, HttpStatus.NO_CONTENT.name());
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_ACCOUNT_PWD_RESET, HttpStatus.NO_CONTENT.name());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

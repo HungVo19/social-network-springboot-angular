@@ -1,17 +1,23 @@
 package com.olympus.mapper;
 
-import com.olympus.dto.response.CurrentUserPost;
+import com.olympus.dto.response.curentUserPost.CurrentUserPost;
 import com.olympus.entity.Post;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.List;
 
-@Mapper(uses = GetPostImageMapper.class)
+@Mapper(uses = {PostImageMapper.class, PostInteractionUserMapper.class, PostCommentMapper.class})
 public interface CurrentUserPostMapper {
     @Mapping(source = "entity.id", target = "postId")
     @Mapping(source = "entity.user.id", target = "userId")
-    CurrentUserPost entityToDTO(Post entity);
+    @Mapping(source = "entity.content", target = "content")
+    @Mapping(source = "entity.createdTime", target = "createdTime")
+    @Mapping(source = "entity.updatedTime", target = "updatedTime")
+    @Mapping(source = "entity.images", target = "images")
+    @Mapping(source = "entity.likes", target = "likes")
+    @Mapping(source = "entity.comments", target = "comments")
+    CurrentUserPost toDTO(Post entity);
 
     List<CurrentUserPost> toListDTOs(List<Post> entities);
 }

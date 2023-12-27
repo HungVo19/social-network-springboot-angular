@@ -32,7 +32,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/v1/users/{userId}")
 @CrossOrigin("*")
-@Tag(name = "Comment", description = "Post's Comments Management APIs")
+@Tag(name = "7. Comment", description = "Post's Comments Management APIs")
 @Validated
 public class CommentController {
     private final AppValidator appValidator;
@@ -68,7 +68,7 @@ public class CommentController {
         Map<String, Long> data = new HashMap<>();
         data.put("id", newCmtId);
         BaseResponse<Map<String, Long>, ?> response =
-                BaseResponse.success(HttpStatus.CREATED, Constant.MSG_SUCCESS_POST_COMMENT_CREATE, data);
+                BaseResponse.success(HttpStatus.CREATED, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_POST_COMMENT_CREATE, data);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -93,7 +93,7 @@ public class CommentController {
         Map<String, Long> data = new HashMap<>();
         data.put("id", id);
         BaseResponse<Map<String, Long>, ?> response =
-                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS_POST_COMMENT_UPDATE, data);
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_POST_COMMENT_UPDATE, data);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -105,17 +105,17 @@ public class CommentController {
                     @Schema(implementation = BaseResponse.class), mediaType = "application/json")}),
     })
     @SecurityRequirement(name = "Bearer")
-    public ResponseEntity<?> deletePostCmt(@AuthenticationPrincipal UserDetails userDetails,
-                                           @PathVariable @Valid @ExistUserById Long userId,
-                                           @PathVariable @Valid @ExistByPostIdAndNotDeleted Long postId,
-                                           @PathVariable @Valid @ExistByCommentIdAndNotDeleted Long commentId) {
+    public ResponseEntity<?> deletePostComment(@AuthenticationPrincipal UserDetails userDetails,
+                                               @PathVariable @Valid @ExistUserById Long userId,
+                                               @PathVariable @Valid @ExistByPostIdAndNotDeleted Long postId,
+                                               @PathVariable @Valid @ExistByCommentIdAndNotDeleted Long commentId) {
         ResponseEntity<?> validationError = appValidator.validatePostCommentDelete(userDetails, userId, postId, commentId);
         if (validationError != null) {
             return validationError;
         }
         postCommentService.deleteCmt(commentId);
-        BaseResponse<String,?> response =
-                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS_POST_COMMENT_DELETE, HttpStatus.NO_CONTENT.name());
+        BaseResponse<String, ?> response =
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_POST_COMMENT_DELETE, HttpStatus.NO_CONTENT.name());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

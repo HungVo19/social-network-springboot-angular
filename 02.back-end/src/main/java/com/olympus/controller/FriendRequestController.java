@@ -1,7 +1,6 @@
 package com.olympus.controller;
 
 import com.olympus.config.Constant;
-import com.olympus.dto.request.FriendRequestSent;
 import com.olympus.dto.response.BaseResponse;
 import com.olympus.dto.response.FriendRequestDTO;
 import com.olympus.service.IFriendRequestService;
@@ -33,7 +32,7 @@ import java.util.Map;
 @RestController
 @CrossOrigin("*")
 @RequestMapping("/v1/friends/requests")
-@Tag(name = "Friend Request", description = "Friend Request Management APIs")
+@Tag(name = "4. Friend Request", description = "Friend Request Management APIs")
 @Validated
 public class FriendRequestController {
     private final AppValidator appValidator;
@@ -64,7 +63,7 @@ public class FriendRequestController {
         Long userId = userService.findIdByUserDetails(userDetails);
         List<FriendRequestDTO> data = friendRequestService.getListRequestReceived(userId);
         BaseResponse<List<FriendRequestDTO>, ?> response =
-                BaseResponse.success(HttpStatus.OK, Constant.MSG_OK, data);
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_FRIEND_REQUEST_RECEIVER, data);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -80,7 +79,7 @@ public class FriendRequestController {
         Long userId = userService.findIdByUserDetails(userDetails);
         List<FriendRequestDTO> data = friendRequestService.getListRequestSent(userId);
         BaseResponse<List<FriendRequestDTO>, ?> response =
-                BaseResponse.success(HttpStatus.OK, Constant.MSG_OK, data);
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_FRIEND_REQUEST_SENT, data);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -104,7 +103,7 @@ public class FriendRequestController {
         Map<String, Long> data = new HashMap<>();
         data.put("friendRequestId", requestId);
         BaseResponse<Map<String, Long>, ?> response =
-                BaseResponse.success(HttpStatus.OK, Constant.MSG_OK, data);
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_FRIEND_REQUEST_CREATE, data);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -125,7 +124,7 @@ public class FriendRequestController {
         }
         friendRequestService.deleteRequest(requestId);
         BaseResponse<String, ?> response =
-                BaseResponse.success(HttpStatus.OK, Constant.MSG_OK, HttpStatus.NO_CONTENT.name());
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_FRIEND_REQUEST_DELETE, HttpStatus.NO_CONTENT.name());
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -149,7 +148,7 @@ public class FriendRequestController {
         Map<String, Long> data = new HashMap<>();
         data.put("friendshipId", friendshipId);
         BaseResponse<Map<String, Long>, ?> response =
-                BaseResponse.success(HttpStatus.OK, Constant.MSG_OK, data);
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_FRIEND_REQUEST_CONFIRM, data);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

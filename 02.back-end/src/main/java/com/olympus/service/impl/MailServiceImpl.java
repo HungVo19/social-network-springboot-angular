@@ -2,6 +2,7 @@ package com.olympus.service.impl;
 
 import com.olympus.config.Constant;
 import com.olympus.entity.User;
+import com.olympus.exception.UserNotFoundException;
 import com.olympus.service.IAuthenticationService;
 import com.olympus.service.IMailService;
 import com.olympus.service.IResetPwdTokenService;
@@ -48,11 +49,11 @@ public class MailServiceImpl implements IMailService {
     }
 
     @Override
-    public void sendOTP(String email) throws MessagingException {
+    public void sendLoginOTP(String email) throws MessagingException {
         String code = AppUtils.generateRandomOTP();
-        User user = userService.findUserByEmail(email).orElseThrow();
+        User user = userService.findUserByEmail(email).orElseThrow(()-> new UserNotFoundException(email  +" not found"));
 
-        authenticationService.createAuth(user, code);
+        authenticationService.createAuthentication(user, code);
 
         MimeMessage message = mailSender.createMimeMessage();
         message.setFrom(new InternetAddress(Constant.MailSenderAddress));
@@ -60,7 +61,7 @@ public class MailServiceImpl implements IMailService {
         message.setSubject("Your OTP");
         String htmlContent = "<p>Your verification code is <b>" + code + "</b></p>" +
                 "<br>" +
-                "<p>Your code will be expired in 5 hours</p>";
+                "<p>Your code will be expired in 5 minutes</p>";
         message.setContent(htmlContent, "text/html; charset=utf-8");
         mailSender.send(message);
 
@@ -69,21 +70,19 @@ public class MailServiceImpl implements IMailService {
     @Override
     public void sendPasswordResetToken(String email) throws MessagingException {
         String token = UUID.randomUUID().toString();
-        User user = userService.findUserByEmail(email).orElseThrow();
+        User user = userService.findUserByEmail(email).orElseThrow(()-> new UserNotFoundException(email + "not found"));
         resetPwdTokenService.createToken(user, token);
 
         MimeMessage message = mailSender.createMimeMessage();
         message.setFrom(new InternetAddress(Constant.MailSenderAddress));
         message.setRecipients(MimeMessage.RecipientType.TO, email);
         message.setSubject("Reset Password");
-//        String htmlContent = "<p> Click link below to reset password</p>" +
-//                "<br>" +
-//                "<a href=\"http://localhost:8080/users/reset-password?token=" +token + "\">Reset</a>";
+        String link = "http://localhost:8080/v1/account/reset-password?token=" + token;
         String htmlContent = "<p> Click link below to reset password</p>" +
                 "<br>" +
-                "<a href=\"" + token + "\">Reset</a>" +
+                "<a href=\"" + link + "\">Reset</a>" +
                 "<br>" +
-                "<p>Your code will be expired in 5 hours</p>";
+                "<p>Your code will be expired in 5 minutes</p>";
         ;
         message.setContent(htmlContent, "text/html; charset=utf-8");
         mailSender.send(message);

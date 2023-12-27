@@ -7,6 +7,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -42,7 +43,9 @@ public class AuthDetailsImpl implements UserDetails {
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true;
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime exprTime = getAuthentication().getCreatedTime();
+        return now.isBefore(exprTime.plusMinutes(5));
     }
 
     @Override

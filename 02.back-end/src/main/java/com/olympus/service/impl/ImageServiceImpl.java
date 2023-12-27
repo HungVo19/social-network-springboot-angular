@@ -38,9 +38,11 @@ public class ImageServiceImpl implements IImageService {
                     .setCredentials(GoogleCredentials.fromStream(pathResource.getInputStream()))
                     .setStorageBucket(firebaseConfig.getBucketName())
                     .build();
-            FirebaseApp.initializeApp(options);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            if(FirebaseApp.getApps().isEmpty()) {
+                FirebaseApp.initializeApp(options);
+            }
+        } catch (Exception ex) {
+            System.out.println("Firebase exception " + ex);
         }
     }
 

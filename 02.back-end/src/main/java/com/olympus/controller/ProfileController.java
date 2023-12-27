@@ -33,7 +33,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/v1/users/{userId}/profile")
 @CrossOrigin("*")
-@Tag(name = "Profile", description = "User's Profile Management APIs")
+@Tag(name = "3. Profile", description = "User's Profile Management APIs")
 @Validated
 public class ProfileController {
     private final IUserService userService;
@@ -60,12 +60,12 @@ public class ProfileController {
         if (loggedInUserId.equals(userId)) {
             CurrentUserProfile data = userService.getCurrentUserProfile(userId);
             BaseResponse<CurrentUserProfile, ?> response =
-                    BaseResponse.success(HttpStatus.OK, Constant.MSG_OK, data);
+                    BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_PROFILE_GET, data);
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
         OtherUserProfile data = userService.getOtherUserProfile(loggedInUserId, userId);
         BaseResponse<OtherUserProfile, ?> response =
-                BaseResponse.success(HttpStatus.OK, Constant.MSG_OK, data);
+                BaseResponse.success(HttpStatus.OK,  Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_PROFILE_GET, data);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -95,7 +95,7 @@ public class ProfileController {
         Map<String, Long> data = new HashMap<>();
         data.put("updatedUserId", updateId);
         BaseResponse<Map<String, Long>, ?> response =
-                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS_USER_UPDATE, data);
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_USER_UPDATE, data);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

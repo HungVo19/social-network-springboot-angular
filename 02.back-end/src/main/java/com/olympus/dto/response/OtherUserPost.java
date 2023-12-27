@@ -1,6 +1,9 @@
 package com.olympus.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.olympus.dto.response.newsfeed.PostCommentDTO;
+import com.olympus.dto.response.newsfeed.PostImageDTO;
+import com.olympus.dto.response.newsfeed.PostInteractionUserDTO;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -15,5 +18,7 @@ public class OtherUserPost {
     private LocalDateTime createdTime;
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedTime;
-    private List<GetPostImage> images;
+    private List<PostImageDTO> images;
+    private List<PostInteractionUserDTO> likes;
+    private List<PostCommentDTO> comments;
 }

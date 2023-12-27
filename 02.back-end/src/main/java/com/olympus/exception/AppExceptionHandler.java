@@ -18,12 +18,12 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class AppExceptionHandler {
-//    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<?> handleGeneralException(Exception ex) {
-//        BaseResponse<String, ?> error =
-//                BaseResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.name(), ex.getLocalizedMessage());
-//        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
-//    }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleGeneralException(Exception ex) {
+        BaseResponse<String, ?> error =
+                BaseResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, Constant.MSG_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.name(), ex.getLocalizedMessage());
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleMethodArgsException(MethodArgumentNotValidException ex) {
@@ -39,7 +39,7 @@ public class AppExceptionHandler {
                 errorDetails.put(objectName, errorMessage);
             }
         });
-        BaseResponse<Map<String, String>, ?> error = BaseResponse.error(HttpStatus.BAD_REQUEST,
+        BaseResponse<Map<String, String>, ?> error = BaseResponse.error(HttpStatus.BAD_REQUEST, Constant.MSG_ERROR,
                 MethodArgumentNotValidException.class.getSimpleName(), errorDetails);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
@@ -52,7 +52,7 @@ public class AppExceptionHandler {
             String errorMessage = constraintViolation.getMessage();
             errorDetails.put(fieldName, errorMessage);
         });
-        BaseResponse<Map<String, String>, ?> error = BaseResponse.error(HttpStatus.BAD_REQUEST,
+        BaseResponse<Map<String, String>, ?> error = BaseResponse.error(HttpStatus.BAD_REQUEST, Constant.MSG_ERROR,
                 MethodArgumentNotValidException.class.getSimpleName(), errorDetails);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
@@ -60,21 +60,24 @@ public class AppExceptionHandler {
     @ExceptionHandler(MessagingException.class)
     public ResponseEntity<?> handleMessagingException(MessagingException ex) {
         BaseResponse<String, ?> error =
-                BaseResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, MessagingException.class.getSimpleName(), ex.getLocalizedMessage());
+                BaseResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, Constant.MSG_ERROR,
+                        MessagingException.class.getSimpleName(), ex.getLocalizedMessage());
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(IOException.class)
     public ResponseEntity<?> handleIOException(IOException ex) {
         BaseResponse<String, ?> error =
-                BaseResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, IOException.class.getSimpleName(), ex.getLocalizedMessage());
+                BaseResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, Constant.MSG_ERROR,
+                        IOException.class.getSimpleName(), ex.getLocalizedMessage());
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<?> handleUserNotFoundException(UserNotFoundException ex) {
         BaseResponse<String, ?> error =
-                BaseResponse.error(HttpStatus.BAD_REQUEST, UserNotFoundException.class.getSimpleName(), ex.getLocalizedMessage());
+                BaseResponse.error(HttpStatus.BAD_REQUEST, Constant.MSG_ERROR,
+                        UserNotFoundException.class.getSimpleName(), ex.getLocalizedMessage());
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
@@ -83,7 +86,17 @@ public class AppExceptionHandler {
         Map<String, String> error = new HashMap<>();
         error.put("File Error", "Invalid file format. Only image files are allowed.");
         BaseResponse<Map<String, String>, ?> response =
-                BaseResponse.error(HttpStatus.BAD_REQUEST, Constant.MSG_ERROR, error);
+                BaseResponse.error(HttpStatus.BAD_REQUEST, Constant.MSG_ERROR,
+                        Constant.ERR_IMAGE_INVALID, error);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ReportCreateException.class)
+    public ResponseEntity<?> handleReportCreateException(ReportCreateException ex) {
+        String error = ex.getDetail();
+        BaseResponse<String, ?> response =
+                BaseResponse.error(HttpStatus.BAD_REQUEST, Constant.MSG_ERROR,
+                        HttpStatus.CONFLICT.name(), error);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 }

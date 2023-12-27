@@ -5,8 +5,8 @@ import com.olympus.dto.request.PostCommentUpdate;
 import com.olympus.entity.Post;
 import com.olympus.entity.PostComment;
 import com.olympus.entity.User;
-import com.olympus.mapper.PostCmtUpdMapper;
 import com.olympus.mapper.PostCommentCreateMapper;
+import com.olympus.mapper.PostCommentUpdateMapper;
 import com.olympus.repository.IPostCommentRepository;
 import com.olympus.service.IPostCommentService;
 import jakarta.transaction.Transactional;
@@ -18,12 +18,12 @@ import org.springframework.stereotype.Service;
 public class PostCommentServiceImpl implements IPostCommentService {
     private final IPostCommentRepository commentRepository;
     private final PostCommentCreateMapper commentCreateMapper;
-    private final PostCmtUpdMapper cmtUpdMapper;
+    private final PostCommentUpdateMapper cmtUpdMapper;
 
     @Autowired
     public PostCommentServiceImpl(IPostCommentRepository commentRepository,
                                   PostCommentCreateMapper commentCreateMapper,
-                                  PostCmtUpdMapper cmtUpdMapper) {
+                                  PostCommentUpdateMapper cmtUpdMapper) {
         this.commentRepository = commentRepository;
         this.commentCreateMapper = commentCreateMapper;
         this.cmtUpdMapper = cmtUpdMapper;
