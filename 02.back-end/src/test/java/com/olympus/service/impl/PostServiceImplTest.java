@@ -54,7 +54,7 @@ class PostServiceImplTest {
     public void testCreatePost() {
         // Arrange
         Long userId = 1L;
-        List<String> imageUrls = List.of("http://example.com/image1.jpg");
+        List<String> imageUrls = List.of("https://example.com/image1.jpg");
         PostCreate postCreate = new PostCreate();
         Post newPost = new Post();
         newPost.setId(1L); // simulate the saved post with an ID
@@ -75,7 +75,7 @@ class PostServiceImplTest {
     public void testUpdatePost() {
         // Arrange
         Long postId = 1L;
-        List<String> imageUrls = List.of("http://example.com/image1.jpg");
+        List<String> imageUrls = List.of("https://example.com/image1.jpg");
         PostUpdate postUpdate = new PostUpdate();
         Post post = new Post();
         post.setId(postId); // Set an ID to simulate the retrieved entity

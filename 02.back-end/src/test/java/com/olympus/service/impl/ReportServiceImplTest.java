@@ -54,8 +54,8 @@ class ReportServiceImplTest {
 
         // Assert
         assertNotNull(reportData);
-        assertEquals(expectedNewPosts, reportData.getNewPostsLasWeek());
-        assertEquals(expectedNewFriends, reportData.getNewFriendLastWeek());
+        assertEquals(expectedNewPosts, reportData.getNewPostsLastWeek());
+        assertEquals(expectedNewFriends, reportData.getNewFriendsLastWeek());
         assertEquals(expectedNewLikes, reportData.getNewLikesLastWeek());
         assertEquals(expectedNewComments, reportData.getNewCommentsLastWeek());
     }

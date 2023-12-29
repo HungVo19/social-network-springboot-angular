@@ -25,7 +25,7 @@ class PostImageServiceImplTest {
     @Test
     public void testSaveSingleImage() {
         // Arrange
-        String imageUrl = "http://example.com/image.jpg";
+        String imageUrl = "https://example.com/image.jpg";
         Post post = new Post();
         PostImage postImage = new PostImage(imageUrl, post); // Your PostImage constructor might differ
 
@@ -40,7 +40,7 @@ class PostImageServiceImplTest {
     @Test
     public void testSaveMultipleImages() {
         // Arrange
-        List<String> imageUrls = List.of("http://example.com/image1.jpg", "http://example.com/image2.jpg");
+        List<String> imageUrls = List.of("https://example.com/image1.jpg", "https://example.com/image2.jpg");
         Post post = new Post();
 
         // Act

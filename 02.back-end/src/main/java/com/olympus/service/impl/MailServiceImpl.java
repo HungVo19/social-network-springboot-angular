@@ -39,16 +39,6 @@ public class MailServiceImpl implements IMailService {
     }
 
     @Override
-    public void sendEmail(String to, String subject, String text) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(Constant.MailSenderAddress);
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(text);
-        mailSender.send(message);
-    }
-
-    @Override
     public void sendLoginOTP(String email) throws MessagingException {
         String code = AppUtils.generateRandomOTP();
         User user = userService.findUserByEmail(email).orElseThrow(()-> new UserNotFoundException(email  +" not found"));
@@ -83,7 +73,6 @@ public class MailServiceImpl implements IMailService {
                 "<a href=\"" + link + "\">Reset</a>" +
                 "<br>" +
                 "<p>Your code will be expired in 5 minutes</p>";
-        ;
         message.setContent(htmlContent, "text/html; charset=utf-8");
         mailSender.send(message);
     }

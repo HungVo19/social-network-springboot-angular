@@ -56,11 +56,11 @@ public class AppUtils {
 
         Row row = sheet.createRow(1);
         Cell cell = row.createCell(0);
-        cell.setCellValue(data.getNewPostsLasWeek());
+        cell.setCellValue(data.getNewPostsLastWeek());
         cell.setCellStyle(style);
 
         cell = row.createCell(1);
-        cell.setCellValue(data.getNewFriendLastWeek());
+        cell.setCellValue(data.getNewFriendsLastWeek());
         cell.setCellStyle(style);
 
         cell = row.createCell(2);

@@ -37,7 +37,7 @@ public class ResetPasswordTokenServiceImpl implements IResetPwdTokenService {
             if (storedToken.equals(hashedToken)) {
                 LocalDateTime now = LocalDateTime.now();
                 LocalDateTime exprTime = resetPwdToken.get().getCreatedTime();
-                return now.isBefore(exprTime.plusHours(5));
+                return now.isBefore(exprTime.plusMinutes(5));
             }
         }
         return false;

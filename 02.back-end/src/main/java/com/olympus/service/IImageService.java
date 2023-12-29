@@ -23,7 +23,7 @@ public interface IImageService {
     }
 
     default String generateFileName(String originalFileName) {
-        return UUID.randomUUID().toString() + getExtension(originalFileName);
+        return UUID.randomUUID() + getExtension(originalFileName);
     }
 
     default byte[] getByteArrays(BufferedImage bufferedImage, String format) throws IOException {
@@ -31,8 +31,9 @@ public interface IImageService {
             ImageIO.write(bufferedImage, format, outputStream);
             outputStream.flush();
             return outputStream.toByteArray();
-        } catch (IOException e) {
-            throw e;
+        } catch (IOException ex) {
+            ex.getLocalizedMessage();
         }
+        return new byte[0];
     }
 }

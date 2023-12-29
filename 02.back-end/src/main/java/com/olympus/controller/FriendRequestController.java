@@ -103,8 +103,8 @@ public class FriendRequestController {
         Map<String, Long> data = new HashMap<>();
         data.put("friendRequestId", requestId);
         BaseResponse<Map<String, Long>, ?> response =
-                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_FRIEND_REQUEST_CREATE, data);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+                BaseResponse.success(HttpStatus.CREATED, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_FRIEND_REQUEST_CREATE, data);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/cancel/{requestId}")
