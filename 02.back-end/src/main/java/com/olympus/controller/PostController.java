@@ -105,9 +105,9 @@ public class PostController {
                     @Schema(implementation = BaseResponse.class), mediaType = "application/json")})
     })
     @SecurityRequirement(name = "Bearer")
-    public ResponseEntity<?> getSpecificPosts(@AuthenticationPrincipal UserDetails userDetails,
-                                              @PathVariable @Valid @ExistUserById Long userId,
-                                              @PathVariable @Valid @ExistByPostIdAndNotDeleted Long postId) {
+    public ResponseEntity<?> getSpecificPost(@AuthenticationPrincipal UserDetails userDetails,
+                                             @PathVariable @Valid @ExistUserById Long userId,
+                                             @PathVariable @Valid @ExistByPostIdAndNotDeleted Long postId) {
         Long loggedInUserId = userService.findIdByUserDetails(userDetails);
         ResponseEntity<?> validationError = appValidator.validateGetSpecificPost(userDetails, userId, postId);
         if (validationError != null) {
@@ -186,8 +186,8 @@ public class PostController {
         Map<String, Long> data = new HashMap<>();
         data.put("updatedPostId", updatedPostId);
         BaseResponse<Map<String, Long>, ?> response =
-                BaseResponse.success(HttpStatus.CREATED, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_POST_UPDATE, data);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_POST_UPDATE, data);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @DeleteMapping("/posts/{postId}")
@@ -233,7 +233,7 @@ public class PostController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    private List<String> uploadPostImages(MultipartFile[] files) throws IOException {
+    public List<String> uploadPostImages(MultipartFile[] files) throws IOException {
         List<String> images = new ArrayList<>();
         if (files != null) {
             appValidator.validateImgFile(files);

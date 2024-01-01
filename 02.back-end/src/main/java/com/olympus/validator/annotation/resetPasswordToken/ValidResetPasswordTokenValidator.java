@@ -15,6 +15,6 @@ public class ValidResetPasswordTokenValidator implements ConstraintValidator<Val
 
     @Override
     public boolean isValid(String token, ConstraintValidatorContext constraintValidatorContext) {
-        return !token.isBlank() && resetPwdTokenService.existByToken(token);
+        return token!= null && !token.isBlank() && resetPwdTokenService.existByToken(token);
     }
 }

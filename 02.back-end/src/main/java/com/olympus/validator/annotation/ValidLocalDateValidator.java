@@ -6,6 +6,7 @@ import jakarta.validation.ConstraintValidatorContext;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 
 public class ValidLocalDateValidator implements ConstraintValidator<ValidLocalDate, String> {
     @Override
@@ -19,7 +20,9 @@ public class ValidLocalDateValidator implements ConstraintValidator<ValidLocalDa
             return true;
         }
         try {
-            LocalDate.parse(value, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd")
+                    .withResolverStyle(ResolverStyle.STRICT);
+            LocalDate.parse(value, formatter);
             return true;
         } catch (DateTimeParseException e) {
             return false;

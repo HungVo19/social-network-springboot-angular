@@ -2,34 +2,35 @@ package com.olympus.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.olympus.config.AuthDetailsImpl;
+import com.olympus.config.AuthDetailsServiceImpl;
+import com.olympus.config.SecurityConfig;
 import com.olympus.config.jwt.JwtProvider;
 import com.olympus.dto.request.AuthRequest;
 import com.olympus.service.IAuthenticationService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@WebMvcTest(AuthenticationController.class)
+@Import(SecurityConfig.class)
 class AuthenticationControllerTest {
-    private MockMvc mockMvc;
+    @MockBean
+    AuthDetailsServiceImpl authDetailsService;
     @Autowired
-    private WebApplicationContext context;
+    private MockMvc mockMvc;
     @MockBean
     private JwtProvider jwtProvider;
     @MockBean
@@ -43,12 +44,6 @@ class AuthenticationControllerTest {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @BeforeEach
-    public void setup() {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context)
-                .apply(springSecurity()).build();
     }
 
     @Test

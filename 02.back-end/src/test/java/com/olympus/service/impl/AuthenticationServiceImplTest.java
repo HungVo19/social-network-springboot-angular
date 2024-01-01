@@ -13,22 +13,22 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AuthenticationServiceImplTest {
+    private final ArgumentCaptor<Authentication> authCaptor = ArgumentCaptor.forClass(Authentication.class);
     @InjectMocks
     private AuthenticationServiceImpl authenticationService;
     @Mock
     private IAuthenticationRepository authenticationRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
-
     private User mockUser;
-    private final ArgumentCaptor<Authentication> authCaptor = ArgumentCaptor.forClass(Authentication.class);
 
     public void setUp() {
         mockUser = new User();
@@ -43,7 +43,7 @@ class AuthenticationServiceImplTest {
                 .thenReturn(Optional.empty());
 
         //Act
-        authenticationService.createAuthentication(mockUser,"123456");
+        authenticationService.createAuthentication(mockUser, "123456");
 
         //Assert
         verify(authenticationRepository).save(authCaptor.capture());
@@ -60,7 +60,7 @@ class AuthenticationServiceImplTest {
         when(authenticationRepository.findByUser(any(User.class))).thenReturn(Optional.of(existingAuthentication));
 
         //Act
-        authenticationService.createAuthentication(mockUser,"123456");
+        authenticationService.createAuthentication(mockUser, "123456");
 
         //Assert
         verify(authenticationRepository).save(authCaptor.capture());
@@ -82,7 +82,7 @@ class AuthenticationServiceImplTest {
         //Assert
         verify(authenticationRepository).save(authCaptor.capture());
         Authentication resetAuthentication = authCaptor.getValue();
-        assertEquals("",resetAuthentication.getCode());
+        assertEquals("", resetAuthentication.getCode());
     }
 
 }

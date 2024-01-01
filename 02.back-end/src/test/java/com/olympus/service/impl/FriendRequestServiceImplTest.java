@@ -119,7 +119,7 @@ class FriendRequestServiceImplTest {
     @Test
     public void testValidAccepter_Valid() {
         //Arrange
-        when(friendRequestRepository.existsByIdAndReceiver_Id(1L,1L)).thenReturn(true);
+        when(friendRequestRepository.existsByIdAndReceiver_Id(1L, 1L)).thenReturn(true);
 
         // Act
         boolean isValid = friendRequestService.validAccepter(1L, 1L);
@@ -231,8 +231,8 @@ class FriendRequestServiceImplTest {
     @Test
     public void testIdentifyRole_Receiver() {
         // Arrange
-        FriendRequest friendRequest = new FriendRequest(2L,1L);
-        when(friendRequestRepository.findByUserIds(1L,2L)).thenReturn(friendRequest);
+        FriendRequest friendRequest = new FriendRequest(2L, 1L);
+        when(friendRequestRepository.findByUserIds(1L, 2L)).thenReturn(friendRequest);
         // Mock more behavior if needed
 
         // Act

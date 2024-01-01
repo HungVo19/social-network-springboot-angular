@@ -1,40 +1,37 @@
 package com.olympus.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.olympus.dto.response.friendship.FriendDTO;
+import com.olympus.config.AuthDetailsServiceImpl;
+import com.olympus.config.SecurityConfig;
+import com.olympus.config.jwt.JwtProvider;
 import com.olympus.service.IFriendshipService;
 import com.olympus.service.IUserService;
 import com.olympus.validator.AppValidator;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
-import java.util.Collections;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@WebMvcTest(FriendshipController.class)
+@Import(SecurityConfig.class)
 class FriendshipControllerTest {
-    private MockMvc mockMvc;
+    @MockBean
+    AuthDetailsServiceImpl authDetailsService;
     @Autowired
-    private WebApplicationContext context;
+    private MockMvc mockMvc;
+    @MockBean
+    private JwtProvider jwtProvider;
     @MockBean
     private IFriendshipService friendshipService;
     @MockBean
@@ -42,26 +39,26 @@ class FriendshipControllerTest {
     @MockBean
     private AppValidator appValidator;
 
-    public static String asJsonString(final Object obj) {
-        try {
-            return new ObjectMapper().writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @BeforeEach
-    public void setup() {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context)
-                .apply(springSecurity()).build();
-    }
-
     @Test
     @WithMockUser(value = "spring")
     void testGetFriendsList() throws Exception {
         Long userId = 1L;
         when(userService.findIdByUserDetails(any(UserDetails.class))).thenReturn(userId);
         mockMvc.perform(get("/v1/friendship/friends-list")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer yourTokenHere"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(value = "spring")
+    void testUnFriend() throws Exception {
+        Long userId = 1L;
+        Long targetId = 2L;
+        when(userService.existByUserId(anyLong())).thenReturn(true);
+        when(userService.findIdByUserDetails(any(UserDetails.class))).thenReturn(userId);
+        when(appValidator.validateUnFriend(any(UserDetails.class), anyLong())).thenReturn(null);
+        mockMvc.perform(delete("/v1/friendship/{targetId}", targetId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header("Authorization", "Bearer yourTokenHere"))
                 .andExpect(status().isOk());

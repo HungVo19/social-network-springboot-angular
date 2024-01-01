@@ -71,7 +71,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    public void testFindUserByEmail_EmailNotExist() {
+    void testFindUserByEmail_EmailNotExist() {
         // Arrange
         String email = "test@example.com";
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.empty());
@@ -84,7 +84,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    public void testFindByUserDetails_Found() {
+    void testFindByUserDetails_Found() {
         // Arrange
         UserDetails userDetails = mock(UserDetails.class);
         when(userDetails.getUsername()).thenReturn("user@example.com");
@@ -101,7 +101,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    public void testFindByUserDetails_NotFound() {
+    void testFindByUserDetails_NotFound() {
         // Arrange
         UserDetails userDetails = mock(UserDetails.class);
         when(userDetails.getUsername()).thenReturn("user@example.com");
@@ -115,7 +115,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    public void testRegister() {
+    void testRegister() {
         // Arrange
         AccountRegister accountRegister = new AccountRegister();
         accountRegister.setEmail("newuser@example.com");
@@ -134,7 +134,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    public void testExistEmail_Exist() {
+    void testExistEmail_Exist() {
         //Arrange
         String email = "user@email.com";
         when(userRepository.existsByEmail(email.trim().toLowerCase())).thenReturn(true);
@@ -147,7 +147,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    public void testExistEmail_NotExist() {
+    void testExistEmail_NotExist() {
         //Arrange
         String email = "user@email.com";
         when(userRepository.existsByEmail(anyString().trim().toLowerCase())).thenReturn(false);
@@ -160,7 +160,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    public void testExistUserByEmailAndPassword_Exist() {
+    void testExistUserByEmailAndPassword_Exist() {
         // Arrange
         AccountLogin accountLogin = new AccountLogin();
         accountLogin.setEmail("user@example.com");
@@ -178,7 +178,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    public void testExistUserByEmailAndPassword_NotExist() {
+    void testExistUserByEmailAndPassword_NotExist() {
         // Arrange
         AccountLogin accountLogin = new AccountLogin();
         accountLogin.setEmail("user@example.com");
@@ -193,7 +193,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    public void testUpdatePassword_Success() {
+    void testUpdatePassword_Success() {
         // Arrange
         AccountPasswordReset request = new AccountPasswordReset();
         request.setEmail("user@example.com");
@@ -210,7 +210,21 @@ class UserServiceImplTest {
     }
 
     @Test
-    public void testUpdatePassword_ThrowExceptionWhenUserNotFound() {
+    void testUpdatePassword_ThrowExceptionWhenUserNotFound() {
+        // Arrange
+        AccountPasswordReset request = new AccountPasswordReset();
+        request.setEmail("user@example.com");
+        request.setPassword("newPassword");
+        User user = mock(User.class);
+        when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.of(user));
+        when(user.isDeleteStatus()).thenReturn(true);
+
+        // Assert
+        assertThrows(UserNotFoundException.class, () -> userService.updatePassword(request));
+    }
+
+    @Test
+    void testUpdatePassword_WhenUserStatusIsDelete_ThenThrowExceptionWhenUserNotFound() {
         // Arrange
         AccountPasswordReset request = new AccountPasswordReset();
         request.setEmail("user@example.com");
@@ -222,7 +236,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    public void testExistByUserId_Exist() {
+    void testExistByUserId_Exist() {
         // Arrange
         Long userId = 1L;
         when(userRepository.existsById(userId)).thenReturn(true);
@@ -325,8 +339,8 @@ class UserServiceImplTest {
         User targetUser = new User();
         OtherUserProfile expectedProfile = new OtherUserProfile();
         Friendship friendship = mock(Friendship.class);
-        when(friendshipService.existsFriendship(currentUserId,targetUserId)).thenReturn(true);
-        when(friendshipService.findByUserIds(currentUserId,targetUserId)).thenReturn(friendship);
+        when(friendshipService.existsFriendship(currentUserId, targetUserId)).thenReturn(true);
+        when(friendshipService.findByUserIds(currentUserId, targetUserId)).thenReturn(friendship);
         when(userRepository.getReferenceById(targetUserId)).thenReturn(targetUser);
         when(otherUserProfileMapper.toDTO(targetUser)).thenReturn(expectedProfile);
 
@@ -346,7 +360,7 @@ class UserServiceImplTest {
         User targetUser = new User();
         OtherUserProfile expectedProfile = new OtherUserProfile();
         FriendRequest friendRequest = mock(FriendRequest.class);
-        when(friendRequestService.findByUserIds(currentUserId,targetUserId)).thenReturn(friendRequest);
+        when(friendRequestService.findByUserIds(currentUserId, targetUserId)).thenReturn(friendRequest);
         when(userRepository.getReferenceById(targetUserId)).thenReturn(targetUser);
         when(otherUserProfileMapper.toDTO(targetUser)).thenReturn(expectedProfile);
 

@@ -51,7 +51,7 @@ class PostServiceImplTest {
     private OtherUserPostMapper otherUserPostMapper;
 
     @Test
-    public void testCreatePost() {
+    void testCreatePost() {
         // Arrange
         Long userId = 1L;
         List<String> imageUrls = List.of("https://example.com/image1.jpg");
@@ -72,7 +72,7 @@ class PostServiceImplTest {
     }
 
     @Test
-    public void testUpdatePost() {
+    void testUpdatePost() {
         // Arrange
         Long postId = 1L;
         List<String> imageUrls = List.of("https://example.com/image1.jpg");
@@ -94,7 +94,7 @@ class PostServiceImplTest {
     }
 
     @Test
-    public void testExistByPostIdAndNotDeleted_Exists() {
+    void testExistByPostIdAndNotDeleted_Exists() {
         // Arrange
         Long id = 1L;
         when(postRepository.existByIdAndNotDeleted(id)).thenReturn(1L);
@@ -107,7 +107,7 @@ class PostServiceImplTest {
     }
 
     @Test
-    public void testExistByPostIdAndNotDeleted_NotExists() {
+    void testExistByPostIdAndNotDeleted_NotExists() {
         // Arrange
         Long id = 1L;
         when(postRepository.existByIdAndNotDeleted(id)).thenReturn(0L);
@@ -120,7 +120,7 @@ class PostServiceImplTest {
     }
 
     @Test
-    public void testExistsByIdAndUserId_Exists() {
+    void testExistsByIdAndUserId_Exists() {
         // Arrange
         Long postId = 1L;
         Long userId = 1L;
@@ -134,7 +134,7 @@ class PostServiceImplTest {
     }
 
     @Test
-    public void testExistsByIdAndUserId_NotExists() {
+    void testExistsByIdAndUserId_NotExists() {
         // Arrange
         Long postId = 1L;
         Long userId = 1L;
@@ -149,7 +149,7 @@ class PostServiceImplTest {
 
 
     @Test
-    public void testDeletePost() {
+    void testDeletePost() {
         // Arrange
         Long id = 1L;
         Post post = new Post(); // Assume this is a valid Post object
@@ -165,7 +165,27 @@ class PostServiceImplTest {
     }
 
     @Test
-    public void testGetNewsfeed() {
+    void testFindByPostId() {
+        // Arrange
+        long postId = 1L;
+        Post mockPost = new Post();
+        mockPost.setId(postId);
+        mockPost.setContent("Test Post");
+
+        when(postRepository.getReferenceById(postId)).thenReturn(mockPost);
+
+        // Act
+        Post result = postService.findByPostId(postId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(postId, result.getId());
+        assertEquals("Test Post", result.getContent());
+        verify(postRepository).getReferenceById(postId);
+    }
+
+    @Test
+    void testGetNewsfeed() {
         // Arrange
         Long userId = 1L;
         int page = 0;
@@ -189,7 +209,7 @@ class PostServiceImplTest {
     }
 
     @Test
-    public void testGetCurrentUserPosts() {
+    void testGetCurrentUserPosts() {
         // Arrange
         Long userId = 1L;
         int page = 0;
@@ -208,7 +228,7 @@ class PostServiceImplTest {
     }
 
     @Test
-    public void testGetFriendPosts() {
+    void testGetFriendPosts() {
         // Arrange
         Long userId = 1L;
         int page = 0;
@@ -227,7 +247,7 @@ class PostServiceImplTest {
     }
 
     @Test
-    public void testGetOtherUserPosts() {
+    void testGetOtherUserPosts() {
         // Arrange
         Long userId = 1L;
         int page = 0;
@@ -246,7 +266,7 @@ class PostServiceImplTest {
     }
 
     @Test
-    public void testGetCurrentUserSpecificPost() {
+    void testGetCurrentUserSpecificPost() {
         // Arrange
         Long userId = 1L;
         Long postId = 1L;
@@ -267,7 +287,7 @@ class PostServiceImplTest {
     }
 
     @Test
-    public void testGetFriendSpecificPost() {
+    void testGetFriendSpecificPost() {
         // Arrange
         Long userId = 1L;
         Long postId = 1L;
@@ -286,7 +306,7 @@ class PostServiceImplTest {
     }
 
     @Test
-    public void testGetOtherUserSpecificPost() {
+    void testGetOtherUserSpecificPost() {
         // Arrange
         Long userId = 1L;
         Long postId = 1L;

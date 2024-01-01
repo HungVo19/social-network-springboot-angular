@@ -107,7 +107,7 @@ public class FriendRequestController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/cancel/{requestId}")
+    @DeleteMapping("/{requestId}")
     @Operation(summary = "Cancel a friend request")
     @ApiResponses({
             @ApiResponse(responseCode = "200", content = {

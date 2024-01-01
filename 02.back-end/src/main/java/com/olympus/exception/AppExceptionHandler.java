@@ -4,6 +4,7 @@ import com.olympus.config.Constant;
 import com.olympus.dto.response.BaseResponse;
 import jakarta.mail.MessagingException;
 import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Path;
 import org.hibernate.validator.internal.engine.path.PathImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,7 +49,7 @@ public class AppExceptionHandler {
     public ResponseEntity<?> handleConstraintException(ConstraintViolationException ex) {
         Map<String, String> errorDetails = new HashMap<>();
         ex.getConstraintViolations().forEach(constraintViolation -> {
-            String fieldName = ((PathImpl) constraintViolation.getPropertyPath()).getLeafNode().getName();
+            String fieldName = extractFieldName(constraintViolation.getPropertyPath());
             String errorMessage = constraintViolation.getMessage();
             errorDetails.put(fieldName, errorMessage);
         });
@@ -98,5 +99,14 @@ public class AppExceptionHandler {
                 BaseResponse.error(HttpStatus.BAD_REQUEST, Constant.MSG_ERROR,
                         HttpStatus.CONFLICT.name(), error);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    // Utility method to extract field name from the path
+    private String extractFieldName(Path propertyPath) {
+        String field = null;
+        for (Path.Node node : propertyPath) {
+            field = node.getName();
+        }
+        return field; // or some default if field is null
     }
 }

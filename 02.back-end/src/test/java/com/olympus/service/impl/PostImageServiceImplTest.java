@@ -11,7 +11,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -22,6 +21,7 @@ class PostImageServiceImplTest {
     private PostImageServiceImpl postImageService;
     @Mock
     private IPostImageRepository postImageRepository;
+
     @Test
     public void testSaveSingleImage() {
         // Arrange

@@ -35,5 +35,4 @@ public class BaseResponse <T,E>{
     public static <E> BaseResponse<E,?> error (HttpStatus httpStatus, String status, String  message, E error) {
         return new BaseResponse<>(httpStatus,status, message, null, error);
     }
-
 }

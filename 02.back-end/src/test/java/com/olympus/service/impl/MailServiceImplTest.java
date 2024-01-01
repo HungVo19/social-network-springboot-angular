@@ -7,21 +7,16 @@ import com.olympus.service.IResetPwdTokenService;
 import com.olympus.service.IUserService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import org.apache.poi.sl.draw.geom.GuideIf;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MailServiceImplTest {
@@ -40,26 +35,38 @@ class MailServiceImplTest {
     @Mock
     private IUserRepository userRepository;
 
-    @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.openMocks(this);
-        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+    @Test
+    void testSendLoginOTP() throws MessagingException {
+        // Arrange
+        String email = "test@example.com";
+        User user = new User(); // mock user or real object as needed
+        MimeMessage mockMessage = mock(MimeMessage.class);
+        when(userService.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(mailSender.createMimeMessage()).thenReturn(mockMessage);
+
+        // Act
+        mailService.sendLoginOTP(email);
+
+        // Assert
+        verify(mailSender).send(any(MimeMessage.class)); // Ensure mail is sent
+        verify(authenticationService).createAuthentication(any(User.class), anyString()); // Ensure OTP is generated and saved
     }
 
-//    @Test
-//    public void testSendLoginOTP_Success() throws MessagingException {
-//        // Arrange
-//        String email = "user@example.com";
-//        User user = new User();
-//        user.setId(1L);
-//        user.setEmail(email);
-//        when(userService.findUserByEmail(email)).thenReturn(Optional.of(user));
-//
-//        // Act
-//        mailService.sendLoginOTP(email);
-//
-//        // Assert
-//        verify(authenticationService).createAuthentication(eq(user), anyString());
-//        verify(mailSender).send(mimeMessage);
-//    }
+    @Test
+    void testSendPasswordResetToken() throws MessagingException {
+        // Arrange
+        String email = "test@example.com";
+        User user = new User(); // mock user or real object as needed
+        MimeMessage mockMessage = mock(MimeMessage.class);
+        when(userService.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(mailSender.createMimeMessage()).thenReturn(mockMessage);
+
+        // Act
+        mailService.sendPasswordResetToken(email);
+
+        // Assert
+        verify(mailSender).send(any(MimeMessage.class)); // Ensure mail is sent
+        verify(resetPwdTokenService).createToken(any(User.class), anyString()); // Ensure reset token is generated and saved
+    }
+
 }

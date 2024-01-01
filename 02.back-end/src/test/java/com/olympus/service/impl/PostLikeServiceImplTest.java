@@ -10,7 +10,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -30,7 +31,7 @@ class PostLikeServiceImplTest {
                 .thenReturn(true);
 
         //Act
-        boolean exist = postLikeService.existLike(1L,2L);
+        boolean exist = postLikeService.existLike(1L, 2L);
 
         //Assert
         assertTrue(exist);
@@ -45,7 +46,7 @@ class PostLikeServiceImplTest {
                 .thenReturn(false);
 
         //Act
-        boolean exist = postLikeService.existLike(1L,2L);
+        boolean exist = postLikeService.existLike(1L, 2L);
 
         //Assert
         assertFalse(exist);
@@ -56,7 +57,7 @@ class PostLikeServiceImplTest {
         //Arrange
         long userId = 1L;
         long postId = 2L;
-        when(postLikeRepository.existsByUser_IdAndPost_Id(userId,postId)).thenReturn(false);
+        when(postLikeRepository.existsByUser_IdAndPost_Id(userId, postId)).thenReturn(false);
 
         //Act
         postLikeService.likeOrUnlike(userId, postId);

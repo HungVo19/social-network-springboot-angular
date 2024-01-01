@@ -10,6 +10,7 @@ import com.olympus.entity.Privacy;
 import com.olympus.exception.InvalidImageException;
 import com.olympus.exception.ReportCreateException;
 import com.olympus.service.*;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -264,15 +265,13 @@ public class AppValidator {
         return null;
     }
 
-    private ResponseEntity<?> validateCommonPostComment(Long loggedInUserId, Long pathUserId, Long pathPostId, Long pathCommentId) {
+    public ResponseEntity<?> validateCommonPostComment(Long loggedInUserId, Long pathUserId, Long pathPostId, Long pathCommentId) {
         Post post = postService.findByPostId(pathPostId);
         Long postOwnerId = post.getUser().getId();
 
         //Check if user ID in path variable does not match ID in the post's body
         if (!pathUserId.equals(postOwnerId)) {
-            BaseResponse<String, ?> response =
-                    BaseResponse.error(HttpStatus.CONFLICT, Constant.MSG_ERROR, HttpStatus.CONFLICT.name(),
-                            Constant.ERR_CONFLICT_PATH_VARIABLE_REQUEST_BODY);
+            BaseResponse<String, ?> response = BaseResponse.error(HttpStatus.CONFLICT, Constant.MSG_ERROR, HttpStatus.CONFLICT.name(), Constant.ERR_CONFLICT_PATH_VARIABLE_REQUEST_BODY);
             return new ResponseEntity<>(response, HttpStatus.CONFLICT);
         }
 
@@ -280,9 +279,7 @@ public class AppValidator {
         if (pathCommentId != null) {
             PostComment comment = postCommentService.findById(pathCommentId);
             if (!pathPostId.equals(comment.getPost().getId())) {
-                BaseResponse<String, ?> response =
-                        BaseResponse.error(HttpStatus.CONFLICT, Constant.MSG_ERROR, HttpStatus.CONFLICT.name(),
-                                Constant.ERR_CONFLICT_PATH_VARIABLE_REQUEST_BODY);
+                BaseResponse<String, ?> response = BaseResponse.error(HttpStatus.CONFLICT, Constant.MSG_ERROR, HttpStatus.CONFLICT.name(), Constant.ERR_CONFLICT_PATH_VARIABLE_REQUEST_BODY);
                 return new ResponseEntity<>(response, HttpStatus.CONFLICT);
             }
         }
@@ -305,7 +302,7 @@ public class AppValidator {
         return null;
     }
 
-    private ResponseEntity<?> checkCommonPostCreateAndUpdate(UserDetails userDetails, Long pathUserId, Object post, MultipartFile[] files) {
+    public ResponseEntity<?> checkCommonPostCreateAndUpdate(UserDetails userDetails, Long pathUserId, Object post, MultipartFile[] files) {
         if (files == null && post == null) {
             String error = "Post must contains at least content or image";
             BaseResponse<String, ?> response =

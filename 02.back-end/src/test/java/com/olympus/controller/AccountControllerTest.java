@@ -1,35 +1,38 @@
 package com.olympus.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.olympus.config.AuthDetailsServiceImpl;
+import com.olympus.config.SecurityConfig;
+import com.olympus.config.jwt.JwtProvider;
 import com.olympus.dto.request.*;
 import com.olympus.service.IMailService;
 import com.olympus.service.IResetPwdTokenService;
 import com.olympus.service.IUserService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@WebMvcTest(AccountController.class)
+@Import(SecurityConfig.class)
 class AccountControllerTest {
-    private MockMvc mockMvc;
+    @MockBean
+    AuthDetailsServiceImpl authDetailsService;
     @Autowired
-    private WebApplicationContext context;
-
+    private MockMvc mockMvc;
+    @MockBean
+    private JwtProvider jwtProvider;
     @MockBean
     private IUserService userService;
 
@@ -45,12 +48,6 @@ class AccountControllerTest {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @BeforeEach
-    public void setup() {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context)
-                .apply(springSecurity()).build();
     }
 
     @WithMockUser(value = "spring")
@@ -111,6 +108,26 @@ class AccountControllerTest {
         //Act & Assert
         mockMvc.perform(post("/v1/account/validate-reset-password").contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(accountPasswordResetToken))).andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser
+    void testValidateResetPwdToken() throws Exception {
+        // Arrange
+        String validToken = "valid-token"; // Example token
+        when(resetPwdTokenService.existByToken(anyString())).thenReturn(true);
+
+        // Assume reset method in service does not return any value (void method)
+        doNothing().when(resetPwdTokenService).reset(validToken);
+
+        // Act & Assert
+        mockMvc.perform(get("/v1/account//reset-password")
+                        .param("token", validToken)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        // Verify that service method was called
+        verify(resetPwdTokenService).reset(validToken);
     }
 
     @Test

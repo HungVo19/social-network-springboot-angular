@@ -4,7 +4,6 @@ import com.olympus.dto.response.friendship.FriendDTO;
 import com.olympus.entity.FriendRequest;
 import com.olympus.entity.Friendship;
 import com.olympus.entity.User;
-import com.olympus.repository.IFriendRequestRepository;
 import com.olympus.repository.IFriendshipRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,7 +11,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -40,7 +38,7 @@ class FriendshipServiceImplTest {
         when(friendshipRepository.existsFriendship(user1, user2)).thenReturn(1L);
 
         //Act
-        boolean exist = friendshipService.existsFriendship(1L,2L);
+        boolean exist = friendshipService.existsFriendship(1L, 2L);
 
         //Assert
         assertTrue(exist);
@@ -56,7 +54,7 @@ class FriendshipServiceImplTest {
         when(friendshipRepository.existsFriendship(user1, user2)).thenReturn(0L);
 
         //Act
-        boolean exist = friendshipService.existsFriendship(1L,2L);
+        boolean exist = friendshipService.existsFriendship(1L, 2L);
 
         //Assert
         assertFalse(exist);

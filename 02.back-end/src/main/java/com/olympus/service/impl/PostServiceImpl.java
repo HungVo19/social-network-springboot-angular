@@ -102,7 +102,7 @@ public class PostServiceImpl implements IPostService {
 
     @Override
     public Page<NewsfeedPostDTO> getNewsfeed(Long userId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC,"createdTime"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdTime"));
         List<Long> friendIds = friendshipService.getListFriendIds(userId);
         if (friendIds == null || friendIds.isEmpty()) {
             return Page.empty(pageable);
@@ -158,7 +158,7 @@ public class PostServiceImpl implements IPostService {
     }
 
     private static void filterDeletedComments(Page<Post> posts) {
-        for(Post p: posts) {
+        for (Post p : posts) {
             List<PostComment> comments = p.getComments().stream().filter(c -> !c.isDeleteStatus())
                     .toList();
             p.setComments(comments);
