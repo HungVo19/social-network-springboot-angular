@@ -1,14 +1,31 @@
-import {Component, ElementRef} from '@angular/core';
+import {Component, ElementRef, OnInit} from '@angular/core';
+import {Router} from "@angular/router";
+import {TokenUtils} from "./features/shared/utils/token.utils";
+import {WebsocketService} from "./service/websocket/websocket.service";
+import {SweetAlertService} from "./service/alert/sweet-alert.service";
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = '03.front-end';
+  userId!: any;
 
-  constructor(private elementRef: ElementRef) {
+  constructor(private elementRef: ElementRef,
+              private router: Router,
+              private websocketService: WebsocketService,
+              private alertService: SweetAlertService) {
+  }
+
+  ngOnInit() {
+    const token = sessionStorage.getItem('access_token');
+    if (token) {
+      const payload = TokenUtils.parseJwt(token);
+      this.userId = payload.id;
+      this.connectWebSocket();
+    }
   }
 
   ngAfterViewInit() {
@@ -206,5 +223,44 @@ export class AppComponent {
     s39.type = "/text/javascript";
     s39.src = "../assets/js/libs/webfont-load.js";
     this.elementRef.nativeElement.appendChild(s39);
+
+    const s40 = document.createElement("script");
+    s40.type = "/text/javascript";
+    s40.src = "../assets/js/libs/jquery.magnific-popup.js";
+    this.elementRef.nativeElement.appendChild(s40);
+  }
+
+
+  private connectWebSocket() {
+    this.notifyNewsfeedUpdate();
+    this.notifyNewComment();
+    this.notifyNewLike();
+  }
+
+  private notifyNewsfeedUpdate() {
+    const topic = `/topic/user.${this.userId}.newPost`;
+    this.websocketService.subscribeToTopic(topic, (message) => {
+      this.alertService.success("Newsfeed Updated");
+    }).then(() => {
+    })
+  }
+
+  private notifyNewComment() {
+    const topic = `/topic/user.${this.userId}.newComment`
+    this.websocketService.subscribeToTopic(topic, (message) => {
+      if (this.userId == message.postOwnerId && this.userId != message.commentOwnerId) {
+        this.alertService.success("You got new comment");
+      }
+    }).then(() => {
+    })
+  }
+
+  private notifyNewLike() {
+    const topic = `/topic/user.${this.userId}.newPostLike`;
+    this.websocketService.subscribeToTopic(topic, (message) => {
+      if (message.like == "liked" && (this.userId == message.postOwnerId && this.userId != message.likerId))
+        this.alertService.success("You got new like");
+    }).then(() => {
+    })
   }
 }

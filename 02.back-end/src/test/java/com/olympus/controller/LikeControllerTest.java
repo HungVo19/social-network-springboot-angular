@@ -1,12 +1,12 @@
 package com.olympus.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.olympus.config.AuthDetailsServiceImpl;
-import com.olympus.config.SecurityConfig;
+import com.olympus.config.security.AuthDetailsServiceImpl;
+import com.olympus.config.security.SecurityConfig;
 import com.olympus.config.jwt.JwtProvider;
 import com.olympus.service.IPostLikeService;
 import com.olympus.service.IPostService;
 import com.olympus.service.IUserService;
+import com.olympus.utils.RealTimeMessenger;
 import com.olympus.validator.AppValidator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,14 +41,8 @@ class LikeControllerTest {
     private IPostService postService;
     @MockBean
     private IUserService userService;
-
-    public static String asJsonString(final Object obj) {
-        try {
-            return new ObjectMapper().writeValueAsString(obj);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+    @MockBean
+    private RealTimeMessenger messenger;
 
     @Test
     @WithMockUser(value = "spring")

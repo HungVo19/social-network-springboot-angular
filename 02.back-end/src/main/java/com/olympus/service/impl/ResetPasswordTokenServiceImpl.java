@@ -71,6 +71,7 @@ public class ResetPasswordTokenServiceImpl implements IResetPwdTokenService {
                 .hashString(newToken, StandardCharsets.UTF_8)
                 .toString();
         resetPwdToken.setToken(newHashedToken);
+        resetPwdToken.setCreatedTime(LocalDateTime.now());
         resetPwdTokenRepository.save(resetPwdToken);
     }
 
@@ -104,5 +105,15 @@ public class ResetPasswordTokenServiceImpl implements IResetPwdTokenService {
                 .toString();
         resetPwdToken.setToken(newHashedToken);
         resetPwdTokenRepository.save(resetPwdToken);
+    }
+
+    @Override
+    public String findEmailByToken(String token) {
+        String hashedToken = Hashing.sha256()
+                .hashString(token, StandardCharsets.UTF_8)
+                .toString();
+        ResetPwdToken resetPwdToken = resetPwdTokenRepository.findByToken(hashedToken)
+                .orElseThrow(() -> new UserNotFoundException(token));
+        return resetPwdToken.getUser().getEmail();
     }
 }

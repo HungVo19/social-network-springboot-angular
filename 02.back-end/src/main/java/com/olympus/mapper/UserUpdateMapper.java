@@ -14,23 +14,18 @@ public interface UserUpdateMapper {
     @Mapping(source = "dto.phoneNumber", target = "entity.phoneNumber")
     @Mapping(source = "dto.currentAddress", target = "entity.currentAddress")
     @Mapping(source = "dto.occupation", target = "entity.occupation")
-    @Mapping(source = "dto", target = "entity.gender", qualifiedByName = "mapGender")
-    @Mapping(source = "dto", target = "entity.status", qualifiedByName = "mapStatus")
+    @Mapping(target = "entity.gender", ignore = true)
+    @Mapping(target = "entity.status", ignore = true)
     void updateEntityFromDTO(UserUpdate dto, @MappingTarget User entity);
 
-    @Named("mapGender")
-    default Gender mapGender(UserUpdate dto) {
+    @AfterMapping
+    default void afterMappingUserUpdateDTOToUser(@MappingTarget User entity, UserUpdate dto) {
         if (dto.getGender() != null) {
-            return Gender.valueOf(dto.getGender().toUpperCase());
+            entity.setGender(Gender.valueOf(dto.getGender().trim().toUpperCase()));
         }
-        return null;
-    }
 
-    @Named("mapStatus")
-    default MaritalStatus mapStatus(UserUpdate dto) {
         if (dto.getStatus() != null) {
-            return MaritalStatus.valueOf(dto.getStatus().toUpperCase());
+            entity.setStatus(MaritalStatus.valueOf(dto.getStatus().trim().toUpperCase()));
         }
-        return null;
     }
 }

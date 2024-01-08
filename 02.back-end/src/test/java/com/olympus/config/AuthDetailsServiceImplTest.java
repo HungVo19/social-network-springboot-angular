@@ -1,5 +1,6 @@
 package com.olympus.config;
 
+import com.olympus.config.security.AuthDetailsServiceImpl;
 import com.olympus.entity.Authentication;
 import com.olympus.repository.IAuthenticationRepository;
 import org.junit.jupiter.api.Test;

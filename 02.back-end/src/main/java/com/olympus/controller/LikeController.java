@@ -4,6 +4,7 @@ import com.olympus.config.Constant;
 import com.olympus.dto.response.BaseResponse;
 import com.olympus.service.IPostLikeService;
 import com.olympus.service.IUserService;
+import com.olympus.utils.RealTimeMessenger;
 import com.olympus.validator.AppValidator;
 import com.olympus.validator.annotation.post.ExistByPostIdAndNotDeleted;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,12 +32,15 @@ public class LikeController {
     private final AppValidator appValidator;
     private final IPostLikeService postLikeService;
     private final IUserService userService;
+    private final RealTimeMessenger messenger;
 
     @Autowired
-    public LikeController(AppValidator appValidator, IPostLikeService postLikeService, IUserService userService) {
+    public LikeController(AppValidator appValidator, IPostLikeService postLikeService,
+                          IUserService userService, RealTimeMessenger messenger) {
         this.appValidator = appValidator;
         this.postLikeService = postLikeService;
         this.userService = userService;
+        this.messenger = messenger;
     }
 
     @PostMapping(value = "/v1/users/{userId}/posts/{postId}")
@@ -54,7 +58,8 @@ public class LikeController {
             return validationError;
         }
         Long loggedInUserId = userService.findIdByUserDetails(userDetails);
-        postLikeService.likeOrUnlike(loggedInUserId, postId);
+        boolean like = postLikeService.likeOrUnlikePost(loggedInUserId, postId);
+        messenger.broadcastPostLikeAction(postId, like, loggedInUserId);
         BaseResponse<String, ?> response =
                 BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_LIKE_UNLIKE, HttpStatus.NO_CONTENT.name());
         return new ResponseEntity<>(response, HttpStatus.OK);

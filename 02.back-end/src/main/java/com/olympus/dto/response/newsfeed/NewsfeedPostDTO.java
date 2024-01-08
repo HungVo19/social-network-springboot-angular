@@ -10,6 +10,10 @@ import java.util.List;
 public class NewsfeedPostDTO {
     private Long postId;
     private Long userId;
+    private String userFirstname;
+    private String userLastname;
+    private String userEmail;
+    private String userAvatar;
     private String content;
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdTime;

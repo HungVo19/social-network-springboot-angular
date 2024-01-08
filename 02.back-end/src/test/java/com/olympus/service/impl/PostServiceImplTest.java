@@ -3,7 +3,7 @@ package com.olympus.service.impl;
 import com.olympus.dto.request.PostCreate;
 import com.olympus.dto.request.PostUpdate;
 import com.olympus.dto.response.OtherUserPost;
-import com.olympus.dto.response.curentUserPost.CurrentUserPost;
+import com.olympus.dto.response.curentuserpost.CurrentUserPost;
 import com.olympus.dto.response.newsfeed.NewsfeedPostDTO;
 import com.olympus.entity.Post;
 import com.olympus.entity.User;
@@ -11,6 +11,7 @@ import com.olympus.mapper.*;
 import com.olympus.repository.IPostRepository;
 import com.olympus.service.IFriendshipService;
 import com.olympus.service.IPostImageService;
+import com.olympus.utils.CustomPage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -127,7 +128,7 @@ class PostServiceImplTest {
         when(postRepository.existsByIdAndUser_Id(postId, userId)).thenReturn(true);
 
         // Act
-        boolean exists = postService.existsByIdAndUser_Id(postId, userId);
+        boolean exists = postService.existsByIdAndUserId(postId, userId);
 
         // Assert
         assertTrue(exists);
@@ -141,7 +142,7 @@ class PostServiceImplTest {
         when(postRepository.existsByIdAndUser_Id(postId, userId)).thenReturn(false);
 
         // Act
-        boolean exists = postService.existsByIdAndUser_Id(postId, userId);
+        boolean exists = postService.existsByIdAndUserId(postId, userId);
 
         // Assert
         assertFalse(exists);
@@ -206,6 +207,28 @@ class PostServiceImplTest {
         // Assert
         assertNotNull(newsfeed);
         assertTrue(newsfeed.isEmpty());
+    }
+
+    @Test
+    void testGetNewsfeedWithCustomPage() {
+        // Arrange
+        Long userId = 1L;
+        int page = 0;
+        int size = 5;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdTime"));
+        List<Long> friendIds = List.of(2L, 3L); // Assuming these are friend IDs
+        when(friendshipService.getListFriendIds(userId)).thenReturn(friendIds);
+
+        List<Post> mockPosts = new ArrayList<>(); // Create an empty list or a list with mock posts as needed
+        Page<Post> mockPage = new PageImpl<>(mockPosts, pageable, mockPosts.size());
+
+        when(postRepository.findPostByFriendsAndDeleteStatusAndPrivacy(friendIds, pageable)).thenReturn(mockPage); // Mock the getNewsfeed method
+
+        // Act
+        CustomPage<NewsfeedPostDTO> result = postService.getNewsfeedWithCustomPage(userId, page, size);
+
+        // Assert
+        assertEquals(mockPage.getTotalElements(), result.getPageable().getTotalElements());
     }
 
     @Test

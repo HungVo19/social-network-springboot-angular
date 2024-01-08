@@ -1,6 +1,6 @@
 package com.olympus.controller;
 
-import com.olympus.config.AuthDetailsImpl;
+import com.olympus.config.security.AuthDetailsImpl;
 import com.olympus.config.Constant;
 import com.olympus.config.jwt.JwtProvider;
 import com.olympus.dto.request.AuthRequest;

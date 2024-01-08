@@ -29,7 +29,7 @@ class ResetPasswordTokenServiceImplTest {
     private IResetPwdTokenRepository resetPwdTokenRepository;
 
     @Test
-    public void testExistByTokenAndEmail_Exist() {
+    void testExistByTokenAndEmail_Exist() {
         // Arrange
         String token = "some-token";
         String email = "user@example.com";
@@ -53,7 +53,7 @@ class ResetPasswordTokenServiceImplTest {
     }
 
     @Test
-    public void testExistByTokenAndEmail_NotExist() {
+    void testExistByTokenAndEmail_NotExist() {
         // Arrange
         String token = "some-token";
         String email = "user@example.com";
@@ -77,7 +77,7 @@ class ResetPasswordTokenServiceImplTest {
     }
 
     @Test
-    public void testCreateToken_NonExistToken() {
+    void testCreateToken_NonExistToken() {
         // Arrange
         User user = new User(); // Assuming User is a valid user object
         when(resetPwdTokenRepository.findByUser(user)).thenReturn(Optional.empty());
@@ -90,7 +90,7 @@ class ResetPasswordTokenServiceImplTest {
     }
 
     @Test
-    public void testCreateToken_ExistingToken() {
+    void testCreateToken_ExistingToken() {
         // Arrange
         User user = new User(); // Assuming User is a valid user object
         ResetPwdToken existingToken = new ResetPwdToken(user, "old-token");
@@ -105,7 +105,7 @@ class ResetPasswordTokenServiceImplTest {
     }
 
     @Test
-    public void testRest_AccountPasswordResetTokenExist() {
+    void testRest_AccountPasswordResetTokenExist() {
         // Arrange
         AccountPasswordResetToken accountToken = new AccountPasswordResetToken();
         accountToken.setEmail("user@email.com");
@@ -122,7 +122,7 @@ class ResetPasswordTokenServiceImplTest {
     }
 
     @Test
-    public void testRest_AccountPasswordResetTokenNotFound() {
+    void testRest_AccountPasswordResetTokenNotFound() {
         // Arrange
         AccountPasswordResetToken accountToken = new AccountPasswordResetToken();
         accountToken.setEmail("user@email.com");
@@ -135,7 +135,7 @@ class ResetPasswordTokenServiceImplTest {
     }
 
     @Test
-    public void testExistByToken_Exist() {
+    void testExistByToken_Exist() {
         // Arrange
         String token = "some-token";
         String hashedToken = Hashing.sha256()
@@ -158,7 +158,7 @@ class ResetPasswordTokenServiceImplTest {
     }
 
     @Test
-    public void testExistByToken_NotExist() {
+    void testExistByToken_NotExist() {
         // Arrange
         String token = "some-token";
         String hashedToken = Hashing.sha256()
@@ -181,7 +181,7 @@ class ResetPasswordTokenServiceImplTest {
     }
 
     @Test
-    public void testReset_TokenExist() {
+    void testReset_TokenExist() {
         // Arrange
         AccountPasswordResetToken accountToken = new AccountPasswordResetToken();
         String token = "12345";
@@ -202,7 +202,7 @@ class ResetPasswordTokenServiceImplTest {
     }
 
     @Test
-    public void testReset_TokenNotExist() {
+    void testReset_TokenNotExist() {
         // Arrange
         String token = "12345";
         when(resetPwdTokenRepository.findByToken(anyString()))
@@ -211,4 +211,41 @@ class ResetPasswordTokenServiceImplTest {
         //Act & Assert
         assertThrows(UserNotFoundException.class, () -> resetPasswordTokenService.reset(token));
     }
+
+    @Test
+    void testFindEmailByTokenSuccess() {
+        // Arrange
+        String token = "validToken";
+        String hashedToken = Hashing.sha256()
+                .hashString(token, StandardCharsets.UTF_8)
+                .toString();
+        String expectedEmail = "test@example.com";
+        ResetPwdToken resetPwdToken = mock(ResetPwdToken.class);
+        User mockUser = mock(User.class);
+
+        when(resetPwdToken.getUser()).thenReturn(mockUser);
+        when(mockUser.getEmail()).thenReturn(expectedEmail);
+        when(resetPwdTokenRepository.findByToken(hashedToken)).thenReturn(Optional.of(resetPwdToken));
+
+        // Act
+        String result = resetPasswordTokenService.findEmailByToken(token);
+
+        // Assert
+        assertEquals(expectedEmail, result);
+    }
+
+    @Test
+    void testFindEmailByTokenThrowsException() {
+        // Arrange
+        String invalidToken = "invalidToken";
+        String hashedToken = Hashing.sha256()
+                .hashString(invalidToken, StandardCharsets.UTF_8)
+                .toString();
+
+        when(resetPwdTokenRepository.findByToken(hashedToken)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(UserNotFoundException.class, () -> resetPasswordTokenService.findEmailByToken(invalidToken));
+    }
+
 }

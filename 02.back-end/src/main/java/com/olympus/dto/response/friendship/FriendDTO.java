@@ -38,7 +38,7 @@ public class FriendDTO {
         this.phoneNumber = phoneNumber;
         this.currentAddress = currentAddress;
         this.occupation = occupation;
-        this.gender = gender.name();
-        this.status = status.name();
+        this.gender = gender != null? gender.name():Gender.RATHER_NOT_TO_SAY.name();
+        this.status = status != null? status.name(): MaritalStatus.RATHER_NOT_TO_SAY.name();
     }
 }

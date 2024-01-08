@@ -40,4 +40,20 @@ public class PostLikeServiceImpl implements IPostLikeService {
         reaction.setCreatedTime(LocalDateTime.now());
         postLikeRepository.save(reaction);
     }
+
+    @Override
+    public boolean likeOrUnlikePost(Long userId, Long postId) {
+        User user = new User(userId);
+        Post post = new Post(postId);
+        if (existLike(userId, postId)) {
+            postLikeRepository.deleteByUserAndPost(user, post);
+            return false;
+        }
+        PostLike reaction = new PostLike();
+        reaction.setPost(post);
+        reaction.setUser(user);
+        reaction.setCreatedTime(LocalDateTime.now());
+        postLikeRepository.save(reaction);
+        return true;
+    }
 }

@@ -1,5 +1,6 @@
 package com.olympus.config;
 
+import com.olympus.config.security.AuthDetailsImpl;
 import com.olympus.entity.Authentication;
 import com.olympus.entity.Role;
 import com.olympus.entity.User;

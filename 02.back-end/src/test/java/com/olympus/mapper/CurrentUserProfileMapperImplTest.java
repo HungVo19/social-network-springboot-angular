@@ -5,7 +5,7 @@ import com.olympus.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
+import org.mapstruct.factory.Mappers;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,12 +13,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 @ExtendWith(MockitoExtension.class)
 class CurrentUserProfileMapperImplTest {
-    @InjectMocks
-    private CurrentUserProfileMapperImpl mapper;
+    private CurrentUserProfileMapper mapper;
     private User user;
 
     @BeforeEach
     void setup() {
+        mapper = Mappers.getMapper(CurrentUserProfileMapper.class);
         user = new User();
         user.setId(1L);
     }

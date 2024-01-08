@@ -3,16 +3,18 @@ package com.olympus.service.impl;
 import com.olympus.dto.request.PostCreate;
 import com.olympus.dto.request.PostUpdate;
 import com.olympus.dto.response.OtherUserPost;
-import com.olympus.dto.response.curentUserPost.CurrentUserPost;
+import com.olympus.dto.response.curentuserpost.CurrentUserPost;
 import com.olympus.dto.response.newsfeed.NewsfeedPostDTO;
 import com.olympus.entity.Post;
 import com.olympus.entity.PostComment;
+import com.olympus.entity.Privacy;
 import com.olympus.entity.User;
 import com.olympus.mapper.*;
 import com.olympus.repository.IPostRepository;
 import com.olympus.service.IFriendshipService;
 import com.olympus.service.IPostImageService;
 import com.olympus.service.IPostService;
+import com.olympus.utils.CustomPage;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -84,7 +86,7 @@ public class PostServiceImpl implements IPostService {
     }
 
     @Override
-    public boolean existsByIdAndUser_Id(Long postId, Long userId) {
+    public boolean existsByIdAndUserId(Long postId, Long userId) {
         return postRepository.existsByIdAndUser_Id(postId, userId);
     }
 
@@ -113,12 +115,22 @@ public class PostServiceImpl implements IPostService {
     }
 
     @Override
+    public CustomPage<NewsfeedPostDTO> getNewsfeedWithCustomPage(Long userId, int page, int size) {
+        return new CustomPage<>(getNewsfeed(userId, page, size));
+    }
+
+    @Override
     public Page<CurrentUserPost> getCurrentUserPosts(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Post> posts = postRepository.getCurrentUserPosts(userId, pageable);
         filterDeletedComments(posts);
         List<CurrentUserPost> currentUserPosts = currentUserPostMapper.toListDTOs(posts.getContent());
         return new PageImpl<>(currentUserPosts, pageable, posts.getTotalElements());
+    }
+
+    @Override
+    public CustomPage<CurrentUserPost> getCurrentUserPostsWithCustomPage(Long loggedInUserId, int page, int size) {
+        return new CustomPage<>(getCurrentUserPosts(loggedInUserId, page, size));
     }
 
     @Override
@@ -131,12 +143,22 @@ public class PostServiceImpl implements IPostService {
     }
 
     @Override
+    public CustomPage<OtherUserPost> getFriendPostsWithCustomPage(Long userId, int page, int size) {
+        return new CustomPage<>(getFriendPosts(userId, page, size));
+    }
+
+    @Override
     public Page<OtherUserPost> getOtherUserPosts(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Post> posts = postRepository.findOtherUserPost(userId, pageable);
         filterDeletedComments(posts);
         List<OtherUserPost> friendUserPosts = otherUserPostMapper.toListDTOs(posts.getContent());
         return new PageImpl<>(friendUserPosts, pageable, posts.getTotalElements());
+    }
+
+    @Override
+    public CustomPage<OtherUserPost> getOtherUserPostsWithCustomPage(Long userId, int page, int size) {
+        return new CustomPage<>(getOtherUserPosts(userId, page, size));
     }
 
     @Override
@@ -155,6 +177,15 @@ public class PostServiceImpl implements IPostService {
     public OtherUserPost getOtherUserSpecificPost(Long userId, Long postId) {
         Post post = postRepository.getSpecificPost(userId, postId);
         return otherUserPostMapper.toDTO(post);
+    }
+
+    @Override
+    public NewsfeedPostDTO getSingleNewsfeedPost(Long postId) {
+        Post post = postRepository.getPostsById(postId);
+        if(post.getPrivacy().equals(Privacy.FRIENDS) || post.getPrivacy().equals(Privacy.PUBLIC)) {
+            return newsfeedPostMapper.toDTO(post);
+        }
+        return null;
     }
 
     private static void filterDeletedComments(Page<Post> posts) {

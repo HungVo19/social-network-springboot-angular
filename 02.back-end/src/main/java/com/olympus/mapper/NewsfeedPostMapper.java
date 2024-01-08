@@ -11,6 +11,10 @@ import java.util.List;
 public interface NewsfeedPostMapper {
     @Mapping(source = "entity.id", target = "postId")
     @Mapping(source = "entity.user.id", target = "userId")
+    @Mapping(source = "entity.user.firstName", target = "userFirstname")
+    @Mapping(source = "entity.user.lastName", target = "userLastname")
+    @Mapping(source = "entity.user.email", target = "userEmail")
+    @Mapping(source = "entity.user.avatar", target = "userAvatar")
     @Mapping(source = "entity.content", target = "content")
     @Mapping(source = "entity.createdTime", target = "createdTime")
     @Mapping(source = "entity.updatedTime", target = "updatedTime")

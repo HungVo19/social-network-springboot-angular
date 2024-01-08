@@ -1,6 +1,6 @@
 package com.olympus.config.jwt;
 
-import com.olympus.config.AuthDetailsImpl;
+import com.olympus.config.security.AuthDetailsImpl;
 import com.olympus.config.Constant;
 import com.olympus.entity.Authentication;
 import com.olympus.entity.User;

@@ -1,0 +1,51 @@
+<!--<div *ngIf="images.length == 1">-->
+<!--  <div class="post-thumb" *ngFor="let i of images">-->
+<!--    <img src="{{i.url}}" alt="photo">-->
+<!--  </div>-->
+<!--</div>-->
+<!--<div *ngIf="images.length == 2">-->
+<!--  <div class="post-block-photo js-zoom-gallery">-->
+<!--    <div *ngFor="let i of images">-->
+<!--      <a href="{{i.url}}" class="half-width"><img src="{{i.url}}" alt="photo"></a>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
+<!--<div *ngIf="images.length == 3">-->
+<!--  <div class="post-block-photo js-zoom-gallery">-->
+<!--    <div *ngFor="let i of images">-->
+<!--      <a href="{{i.url}}" class="col col-3-width"><img src="{{i.url}}" alt="photo"></a>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
+<!--<div *ngIf="images.length == 4">-->
+<!--  <div class="post-block-photo js-zoom-gallery">-->
+<!--    <div *ngFor="let i of images">-->
+<!--      <a href="{{i.url}}" class="half-width"><img src="{{i.url}}" alt="photo"></a>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
+<!--<div *ngIf="images.length >= 5">-->
+<!--  <div class="post-block-photo js-zoom-gallery">-->
+<!--    <div *ngFor="let i of images.slice(0,3)">-->
+<!--      <a href="{{i.url}}" class="half-width"><img src="{{i.url}}" alt="photo"></a>-->
+<!--    </div>-->
+<!--    <div *ngFor="let i of images.slice(3,4)">-->
+<!--      <a href="{{i.url}}" class="more-photos half-width">-->
+<!--        <img src="{{i.url}}" alt="photo">-->
+<!--        <span class="h2">+{{images.length - 4}}</span>-->
+<!--      </a>-->
+<!--    </div>-->
+<!--    <div *ngFor="let i of images.slice(4)" hidden>-->
+<!--      <a href="{{i.url}}" class="half-width">-->
+<!--        <img src="{{i.url}}" alt="photo">-->
+<!--      </a>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
+<div class="post-block-photo">
+<lightgallery [onBeforeSlide]="onBeforeSlide" [settings]="settings">
+  <a *ngFor="let image of images" [attr.data-src]="image.url" [attr.data-sub-html]="image.id" class="half-width">
+    <img [src]="image.url" alt="photo"/>
+  </a>
+</lightgallery>
+</div>

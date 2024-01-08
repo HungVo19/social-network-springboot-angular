@@ -66,7 +66,7 @@ public class FriendshipServiceImpl implements IFriendshipService {
         return getFriendsList(userId).stream()
                 .map(FriendDTO::getUserId)
                 .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

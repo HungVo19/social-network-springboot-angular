@@ -41,6 +41,17 @@ class FriendRequestSentMapperImplTest {
     }
 
     @Test
+    void whenUserIsNull_thenReturnNull() {
+        // Arrange
+        FriendRequestSent dto = new FriendRequestSent();
+        dto.setReceiverId(null);
+        // Act
+        FriendRequest entity = mapper.toEntity(dto);
+        // Assert
+        assertNull(entity.getReceiver());
+    }
+
+    @Test
     void whenReceiverIdIsNull_thenReceiverIsNull() {
         // Arrange
         FriendRequestSent dto = new FriendRequestSent(); // receiverId not set

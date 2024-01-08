@@ -15,7 +15,7 @@ public class Constant {
      * Expiration time : 3 days
      */
     public static final long JWT_EXPIRATION = 1000 * 60 * 60 * 24 * 3;
-    public static final String[] WHITE_LIST = {"/test", "/login", "/", "/index", "/home/", "/api-docs/**",
+    public static final String[] WHITE_LIST = {"/test", "/login", "/", "/index", "/home/", "/api-docs/**","/ws/**",
             "/**/swagger-ui/**", "/v3/api-docs", "/swagger-ui/**", "/swagger-ui.html",
             "/v1/account/forgot-password", "/v1/account/reset-password", "/v1/account/login",
             "/v1/auth", "/v1/account/register", "/v1/account/validate-reset-password"};
@@ -52,9 +52,9 @@ public class Constant {
     public static final String ERR_FRIENDSHIP_DUPLICATE_SENDER_RECEIVER = "Sender and Receiver are the same user";
     public static final String ERR_FRIEND_REQUEST_REQUEST_NOT_VALID_CANCELER = "Not valid sender either receiver";
     public static final String ERR_FRIEND_REQUEST_REQUEST_NOT_VALID_ACCEPTER = "Not valid receiver";
-    public static final String ERR_CONFLICT_PATH_VARIABLE_REQUEST_BODY ="Path variable and body ids conflict";
-    public static final String ERR_CONFLICT_PATH_POST_ID_USER_ID ="User ID in path variable does not match ID in post's user";
-    public static final String ERR_IMAGE_INVALID ="Not valid images";
+    public static final String ERR_CONFLICT_PATH_VARIABLE_REQUEST_BODY = "Path variable and body ids conflict";
+    public static final String ERR_CONFLICT_PATH_POST_ID_USER_ID = "User ID in path variable does not match ID in post's user";
+    public static final String ERR_IMAGE_INVALID = "Not valid images";
 
     public static final String MSG_OK = "ok";
     public static final String MSG_SUCCESS = "success";

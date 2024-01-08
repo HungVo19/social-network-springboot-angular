@@ -1,9 +1,9 @@
 package com.olympus.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.olympus.config.AuthDetailsImpl;
-import com.olympus.config.AuthDetailsServiceImpl;
-import com.olympus.config.SecurityConfig;
+import com.olympus.config.security.AuthDetailsImpl;
+import com.olympus.config.security.AuthDetailsServiceImpl;
+import com.olympus.config.security.SecurityConfig;
 import com.olympus.config.jwt.JwtProvider;
 import com.olympus.dto.request.AuthRequest;
 import com.olympus.service.IAuthenticationService;

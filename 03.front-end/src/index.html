@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 
-  <title>Main Landing Page</title>
+  <title>Olympus</title>
 
   <!-- Required meta tags always come first -->
   <meta charset="utf-8">
@@ -11,12 +11,18 @@
 
   <!-- Main Font -->
   <script src="assets/js/libs/webfontloader.min.js"></script>
+  <script src="assets/js/libs/jquery.magnific-popup.js"></script>
   <script>
     WebFont.load({
       google: {
         families: ['Roboto:300,400,500,700:latin']
       }
     });
+  </script>
+  <script>
+    if (global === undefined) {
+      var global = window;
+    }
   </script>
 
 
@@ -87,5 +93,7 @@
   <script defer src="assets/fonts/fontawesome-all.js"></script>
 
   <script src="assets/Bootstrap/dist/js/bootstrap.bundle.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>

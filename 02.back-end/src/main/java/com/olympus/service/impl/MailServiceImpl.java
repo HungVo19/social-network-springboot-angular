@@ -13,7 +13,6 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +40,7 @@ public class MailServiceImpl implements IMailService {
     @Override
     public void sendLoginOTP(String email) throws MessagingException {
         String code = AppUtils.generateRandomOTP();
-        User user = userService.findUserByEmail(email).orElseThrow(()-> new UserNotFoundException(email  +" not found"));
+        User user = userService.findUserByEmail(email).orElseThrow(() -> new UserNotFoundException(email + " not found"));
 
         authenticationService.createAuthentication(user, code);
 
@@ -60,14 +59,14 @@ public class MailServiceImpl implements IMailService {
     @Override
     public void sendPasswordResetToken(String email) throws MessagingException {
         String token = UUID.randomUUID().toString();
-        User user = userService.findUserByEmail(email).orElseThrow(()-> new UserNotFoundException(email + "not found"));
+        User user = userService.findUserByEmail(email).orElseThrow(() -> new UserNotFoundException(email + "not found"));
         resetPwdTokenService.createToken(user, token);
 
         MimeMessage message = mailSender.createMimeMessage();
         message.setFrom(new InternetAddress(Constant.MailSenderAddress));
         message.setRecipients(MimeMessage.RecipientType.TO, email);
         message.setSubject("Reset Password");
-        String link = "http://localhost:8080/v1/account/reset-password?token=" + token;
+        String link = "http://localhost:4200/reset-password?token=" + token;
         String htmlContent = "<p> Click link below to reset password</p>" +
                 "<br>" +
                 "<a href=\"" + link + "\">Reset</a>" +

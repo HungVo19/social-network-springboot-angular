@@ -12,4 +12,5 @@ public interface IResetPwdTokenService {
     void reset(String token);
 
     boolean existByToken(String token);
+    String findEmailByToken(String token);
 }

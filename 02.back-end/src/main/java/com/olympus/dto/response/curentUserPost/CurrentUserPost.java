@@ -1,4 +1,4 @@
-package com.olympus.dto.response.curentUserPost;
+package com.olympus.dto.response.curentuserpost;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.olympus.dto.response.newsfeed.PostCommentDTO;
@@ -13,6 +13,10 @@ import java.util.List;
 public class CurrentUserPost {
     private String postId;
     private String userId;
+    private String userFirstname;
+    private String userLastname;
+    private String userEmail;
+    private String userAvatar;
     private String content;
     private String privacy;
     @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss")

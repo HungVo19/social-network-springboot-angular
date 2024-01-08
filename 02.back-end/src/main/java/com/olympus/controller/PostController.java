@@ -5,12 +5,14 @@ import com.olympus.dto.request.PostCreate;
 import com.olympus.dto.request.PostUpdate;
 import com.olympus.dto.response.BaseResponse;
 import com.olympus.dto.response.OtherUserPost;
-import com.olympus.dto.response.curentUserPost.CurrentUserPost;
+import com.olympus.dto.response.curentuserpost.CurrentUserPost;
 import com.olympus.dto.response.newsfeed.NewsfeedPostDTO;
 import com.olympus.service.IFriendshipService;
 import com.olympus.service.IImageService;
 import com.olympus.service.IPostService;
 import com.olympus.service.IUserService;
+import com.olympus.utils.CustomPage;
+import com.olympus.utils.RealTimeMessenger;
 import com.olympus.validator.AppValidator;
 import com.olympus.validator.annotation.post.ExistByPostIdAndNotDeleted;
 import com.olympus.validator.annotation.user.ExistUserById;
@@ -23,7 +25,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -50,18 +51,21 @@ public class PostController {
     private final IPostService postService;
     private final IUserService userService;
     private final IFriendshipService friendshipService;
+    private final RealTimeMessenger messenger;
 
     @Autowired
     public PostController(AppValidator appValidator,
                           IImageService iImageService,
                           IPostService postService,
                           IUserService userService,
-                          IFriendshipService friendshipService) {
+                          IFriendshipService friendshipService,
+                          RealTimeMessenger messenger) {
         this.appValidator = appValidator;
         this.iImageService = iImageService;
         this.postService = postService;
         this.userService = userService;
         this.friendshipService = friendshipService;
+        this.messenger = messenger;
     }
 
     @GetMapping("/posts")
@@ -78,21 +82,21 @@ public class PostController {
                                           @RequestParam(defaultValue = "5") @Valid int size) {
         Long loggedInUserId = userService.findIdByUserDetails(userDetails);
         if (loggedInUserId.equals(userId)) {
-            Page<CurrentUserPost> data = postService.getCurrentUserPosts(loggedInUserId, page, size);
-            BaseResponse<Page<CurrentUserPost>, ?> response =
+            CustomPage<CurrentUserPost> data = postService.getCurrentUserPostsWithCustomPage(loggedInUserId, page, size);
+            BaseResponse<CustomPage<CurrentUserPost>, ?> response =
                     BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_POST_GET_BY_USER, data);
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
 
         if (friendshipService.existsFriendship(loggedInUserId, userId)) {
-            Page<OtherUserPost> data = postService.getFriendPosts(userId, page, size);
-            BaseResponse<Page<OtherUserPost>, ?> response =
+            CustomPage<OtherUserPost> data = postService.getFriendPostsWithCustomPage(userId, page, size);
+            BaseResponse<CustomPage<OtherUserPost>, ?> response =
                     BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_POST_GET_BY_USER, data);
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
 
-        Page<OtherUserPost> data = postService.getOtherUserPosts(userId, page, size);
-        BaseResponse<Page<OtherUserPost>, ?> response =
+        CustomPage<OtherUserPost> data = postService.getOtherUserPostsWithCustomPage(userId, page, size);
+        BaseResponse<CustomPage<OtherUserPost>, ?> response =
                 BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_POST_GET_BY_USER, data);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -150,6 +154,7 @@ public class PostController {
         List<String> images = uploadPostImages(files);
 
         Long newPostId = postService.createPost(userId, post, images);
+        messenger.broadcastPostToFriendsNewsfeed(userId, newPostId);
         Map<String, Long> data = new HashMap<>();
         data.put("id", newPostId);
         BaseResponse<Map<String, Long>, ?> response =
@@ -227,8 +232,8 @@ public class PostController {
         if (validationError != null) {
             return validationError;
         }
-        Page<NewsfeedPostDTO> data = postService.getNewsfeed(userId, page, size);
-        BaseResponse<Page<NewsfeedPostDTO>, ?> response =
+        CustomPage<NewsfeedPostDTO> data = postService.getNewsfeedWithCustomPage(userId, page, size);
+        BaseResponse<CustomPage<NewsfeedPostDTO>, ?> response =
                 BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_POST_GET_NEWSFEED, data);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

@@ -1,14 +1,15 @@
 package com.olympus.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.olympus.config.AuthDetailsServiceImpl;
-import com.olympus.config.SecurityConfig;
+import com.olympus.config.security.AuthDetailsServiceImpl;
+import com.olympus.config.security.SecurityConfig;
 import com.olympus.config.jwt.JwtProvider;
 import com.olympus.dto.request.PostCommentCreate;
 import com.olympus.dto.request.PostCommentUpdate;
 import com.olympus.service.IPostCommentService;
 import com.olympus.service.IPostService;
 import com.olympus.service.IUserService;
+import com.olympus.utils.RealTimeMessenger;
 import com.olympus.validator.AppValidator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,8 @@ class CommentControllerTest {
     private IUserService userService;
     @MockBean
     private IPostService postService;
+    @MockBean
+    private RealTimeMessenger messenger;
 
     public static String asJsonString(final Object obj) {
         try {

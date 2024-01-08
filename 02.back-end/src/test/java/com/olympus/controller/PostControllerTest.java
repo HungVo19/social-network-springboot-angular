@@ -1,18 +1,19 @@
 package com.olympus.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.olympus.config.AuthDetailsServiceImpl;
-import com.olympus.config.SecurityConfig;
+import com.olympus.config.security.AuthDetailsServiceImpl;
+import com.olympus.config.security.SecurityConfig;
 import com.olympus.config.jwt.JwtProvider;
 import com.olympus.dto.request.PostCreate;
 import com.olympus.dto.request.PostUpdate;
 import com.olympus.dto.response.OtherUserPost;
-import com.olympus.dto.response.curentUserPost.CurrentUserPost;
+import com.olympus.dto.response.curentuserpost.CurrentUserPost;
 import com.olympus.dto.response.newsfeed.NewsfeedPostDTO;
 import com.olympus.service.IFriendshipService;
 import com.olympus.service.IImageService;
 import com.olympus.service.IPostService;
 import com.olympus.service.IUserService;
+import com.olympus.utils.RealTimeMessenger;
 import com.olympus.validator.AppValidator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,8 @@ class PostControllerTest {
     private IUserService userService;
     @MockBean
     private IFriendshipService friendshipService;
+    @MockBean
+    private RealTimeMessenger messenger;
 
     public static String asJsonString(final Object obj) {
         try {

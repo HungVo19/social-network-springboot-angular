@@ -16,6 +16,10 @@ public class ExistResetPasswordTokenValidator implements ConstraintValidator<Exi
 
     @Override
     public boolean isValid(AccountPasswordResetToken resetPwdToken, ConstraintValidatorContext constraintValidatorContext) {
-        return resetPwdTokenService.existByTokenAndEmail(resetPwdToken.getToken(), resetPwdToken.getEmail());
+        try {
+            return resetPwdTokenService.existByTokenAndEmail(resetPwdToken.getToken(), resetPwdToken.getEmail());
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

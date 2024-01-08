@@ -1,6 +1,6 @@
 package com.olympus.config.jwt;
 
-import com.olympus.config.AuthDetailsServiceImpl;
+import com.olympus.config.security.AuthDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,12 +1,11 @@
 package com.olympus.config.jwt;
 
-import com.olympus.config.AuthDetailsImpl;
+import com.olympus.config.security.AuthDetailsImpl;
 import com.olympus.config.Constant;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 

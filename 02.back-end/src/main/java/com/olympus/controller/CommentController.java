@@ -6,6 +6,7 @@ import com.olympus.dto.request.PostCommentUpdate;
 import com.olympus.dto.response.BaseResponse;
 import com.olympus.service.IPostCommentService;
 import com.olympus.service.IUserService;
+import com.olympus.utils.RealTimeMessenger;
 import com.olympus.validator.AppValidator;
 import com.olympus.validator.annotation.post.ExistByPostIdAndNotDeleted;
 import com.olympus.validator.annotation.postcomment.ExistByCommentIdAndNotDeleted;
@@ -38,12 +39,17 @@ public class CommentController {
     private final AppValidator appValidator;
     private final IPostCommentService postCommentService;
     private final IUserService userService;
+    private final RealTimeMessenger messenger;
 
     @Autowired
-    public CommentController(AppValidator appValidator, IPostCommentService postCommentService, IUserService userService) {
+    public CommentController(AppValidator appValidator,
+                             IPostCommentService postCommentService,
+                             IUserService userService,
+                             RealTimeMessenger messenger) {
         this.appValidator = appValidator;
         this.postCommentService = postCommentService;
         this.userService = userService;
+        this.messenger = messenger;
     }
 
     @PostMapping("/posts/{postId}/comments")
@@ -65,6 +71,7 @@ public class CommentController {
         }
         Long loggedInUserId = userService.findIdByUserDetails(userDetails);
         Long newCmtId = postCommentService.createComment(loggedInUserId, postId, comment);
+        messenger.broadcastComment(postId, newCmtId);
         Map<String, Long> data = new HashMap<>();
         data.put("id", newCmtId);
         BaseResponse<Map<String, Long>, ?> response =

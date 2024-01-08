@@ -118,9 +118,16 @@ public class AccountController {
                     @Schema(implementation = BaseResponse.class), mediaType = "application/json")}),
     })
     @SecurityRequirements
-    public String validateResetPwdToken(@RequestParam(name = "token") @Valid @ValidResetPasswordToken String token) {
+    public ResponseEntity<?> validateResetPwdToken(@RequestParam(name = "token") @Valid @ValidResetPasswordToken String token) {
+        String email = resetPwdTokenService.findEmailByToken(token);
+        Map<String, String> data = new HashMap<>();
+        data.put("email", email);
+        BaseResponse<Map<String, String>, ?> response =
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, HttpStatus.OK.name(), data);
+
+        //reset token
         resetPwdTokenService.reset(token);
-        return "Token is valid";
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/reset-password")

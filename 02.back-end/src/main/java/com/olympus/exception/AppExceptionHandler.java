@@ -5,13 +5,13 @@ import com.olympus.dto.response.BaseResponse;
 import jakarta.mail.MessagingException;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
-import org.hibernate.validator.internal.engine.path.PathImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -101,12 +101,20 @@ public class AppExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<?> handleMaxSizeException(MaxUploadSizeExceededException ex) {
+        BaseResponse<String, ?> response =
+                BaseResponse.error(HttpStatus.BAD_REQUEST, Constant.MSG_ERROR,
+                        HttpStatus.CONFLICT.name(), "Unable to upload. File is too large!");
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
     // Utility method to extract field name from the path
     private String extractFieldName(Path propertyPath) {
         String field = null;
         for (Path.Node node : propertyPath) {
             field = node.getName();
         }
-        return field; // or some default if field is null
+        return field;
     }
 }

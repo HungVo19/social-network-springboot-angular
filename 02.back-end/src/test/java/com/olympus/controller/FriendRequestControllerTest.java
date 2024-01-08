@@ -1,7 +1,7 @@
 package com.olympus.controller;
 
-import com.olympus.config.AuthDetailsServiceImpl;
-import com.olympus.config.SecurityConfig;
+import com.olympus.config.security.AuthDetailsServiceImpl;
+import com.olympus.config.security.SecurityConfig;
 import com.olympus.config.jwt.JwtProvider;
 import com.olympus.service.IFriendRequestService;
 import com.olympus.service.IFriendshipService;

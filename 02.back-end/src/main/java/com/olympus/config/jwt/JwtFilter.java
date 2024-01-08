@@ -1,6 +1,6 @@
 package com.olympus.config.jwt;
 
-import com.olympus.config.AuthDetailsServiceImpl;
+import com.olympus.config.security.AuthDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

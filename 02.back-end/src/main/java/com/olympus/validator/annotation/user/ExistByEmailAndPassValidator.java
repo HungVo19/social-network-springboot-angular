@@ -16,6 +16,10 @@ public class ExistByEmailAndPassValidator implements ConstraintValidator<ExistBy
 
     @Override
     public boolean isValid(AccountLogin accountLogin, ConstraintValidatorContext constraintValidatorContext) {
-        return userService.existsUserByEmailAndPassword(accountLogin);
+        try {
+            return userService.existsUserByEmailAndPassword(accountLogin);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
