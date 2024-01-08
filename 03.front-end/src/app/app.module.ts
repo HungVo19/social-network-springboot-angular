@@ -14,18 +14,23 @@ import {HeaderComponent} from './features/shared/common/header/header.component'
 import {TokenInterceptor} from "./features/shared/auth/token.interceptor";
 import {NewsfeedItemComponent} from './features/newsfeed/newsfeed-item/newsfeed-item.component';
 import {StatusPostComponent} from './features/status-post/status-post.component';
-import {PersonalPostsComponent} from './personal-posts/personal-posts.component';
+import {PersonalPostsComponent} from './features/personal-posts/personal-posts.component';
 import {FixedSidebarLeftComponent} from './features/shared/common/fixed-sidebar-left/fixed-sidebar-left.component';
 import {FixedSidebarRightComponent} from './features/shared/common/fixed-sidebar-right/fixed-sidebar-right.component';
 import {BackToTopArrowComponent} from './features/shared/common/back-to-top-arrow/back-to-top-arrow.component';
-import {TimeAgoPipe} from "./utils/time-ago.pipe";
+import {TimeAgoPipe} from "./features/shared/utils/time-ago.pipe";
 import {CommentFormComponent} from './features/shared/common/comment/comment-form/comment-form.component';
 import {CommentListComponent} from './features/shared/common/comment/comment-list/comment-list.component';
 import {
   PostAdditionalInfoComponent
 } from './features/shared/common/post-additional-info/post-additional-info.component';
 import {PostImagesComponent} from './features/shared/common/post-images/post-images.component';
-import {LightgalleryModule} from "lightgallery/angular";
+import {TopHeaderProfileComponent} from './features/shared/common/top-header-profile/top-header-profile.component';
+import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
+import {NgxMasonryModule} from "ngx-masonry";
+import {LeftSidebarComponent} from './features/personal-posts/left-sidebar/left-sidebar.component';
+import {RightSidebarComponent} from './features/personal-posts/right-sidebar/right-sidebar.component';
+import {SearchResultComponent} from './features/search-result/search-result.component';
 
 @NgModule({
   declarations: [
@@ -46,7 +51,11 @@ import {LightgalleryModule} from "lightgallery/angular";
     CommentFormComponent,
     CommentListComponent,
     PostAdditionalInfoComponent,
-    PostImagesComponent
+    PostImagesComponent,
+    TopHeaderProfileComponent,
+    LeftSidebarComponent,
+    RightSidebarComponent,
+    SearchResultComponent
   ],
   imports: [
     BrowserModule,
@@ -54,8 +63,9 @@ import {LightgalleryModule} from "lightgallery/angular";
     HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
-    LightgalleryModule,
-    AppRoutingModule
+    AppRoutingModule,
+    BrowserAnimationsModule,
+    NgxMasonryModule,
   ],
   providers: [TokenInterceptor],
   bootstrap: [AppComponent]

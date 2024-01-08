@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Table(name = "post_like")
 public class PostLike {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "like_id")
     private Long id;
 

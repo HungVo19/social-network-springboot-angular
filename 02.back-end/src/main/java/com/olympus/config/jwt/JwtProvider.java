@@ -2,10 +2,7 @@ package com.olympus.config.jwt;
 
 import com.olympus.config.security.AuthDetailsImpl;
 import com.olympus.config.Constant;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -61,8 +58,16 @@ public class JwtProvider {
         try {
             Jwts.parser().setSigningKey(Constant.JWT_SECRET).parseClaimsJws(token);
             return true;
-        } catch (JwtException e) {
-            log.error("Invalid JWT");
+        } catch (SignatureException e) {
+            log.error("Invalid signature: {}", e.getMessage());
+        } catch (MalformedJwtException e) {
+            log.error("Invalid token: {}", e.getMessage());
+        } catch (ExpiredJwtException e) {
+            log.error("token is expired: {}", e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            log.error("token is unsupported: {}", e.getMessage());
+        } catch (IllegalArgumentException e) {
+            log.error("claims string is empty: {}", e.getMessage());
         }
         return false;
     }

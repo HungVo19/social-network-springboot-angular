@@ -1,5 +1,6 @@
 package com.olympus.utils;
 
+import com.olympus.dto.response.curentuserpost.CurrentUserPost;
 import com.olympus.dto.response.newsfeed.NewsfeedPostDTO;
 import com.olympus.entity.Post;
 import com.olympus.entity.PostComment;
@@ -33,16 +34,21 @@ public class RealTimeMessenger {
     }
 
     public void broadcastPostToFriendsNewsfeed(Long userId, Long newPostId) {
-        NewsfeedPostDTO post = postService.getSingleNewsfeedPost(newPostId);
-        if (post != null) {
+        Post post = postService.findByPostId(newPostId);
+        Long postOwnerId = post.getUser().getId();
+        Map<String, String> message = new HashMap<>();
+        message.put("postId", newPostId.toString());
+        message.put("userId", postOwnerId.toString());
+        if (post.getPrivacy().equals(Privacy.FRIENDS) || post.getPrivacy().equals(Privacy.PUBLIC)) {
             List<Long> friendIds = friendshipService.getListFriendIds(userId);
             if (!friendIds.isEmpty()) {
                 for (Long friendId : friendIds) {
                     // Send the post to each friend's newsfeed
-                    messagingTemplate.convertAndSend("/topic/user." + friendId + ".newPost", post);
+                    messagingTemplate.convertAndSend("/topic/user." + friendId + ".newPost", message);
                 }
             }
         }
+        messagingTemplate.convertAndSend("/topic/user." + userId + ".newPost", message);
     }
 
     public void broadcastComment(Long postId, Long commentId) {

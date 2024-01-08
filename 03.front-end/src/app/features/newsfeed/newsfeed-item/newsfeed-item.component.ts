@@ -43,7 +43,6 @@ export class NewsfeedItemComponent implements OnInit {
     this.postService.getNewsfeed(this.userId).subscribe({
       next: (data: any) => {
         this.posts = data.data.content;
-        console.log(this.posts)
       },
       error: (data: any) => {
         const text = JSON.stringify(data.error.error);

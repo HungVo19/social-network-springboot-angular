@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 public interface IUserService {
@@ -34,4 +35,6 @@ public interface IUserService {
     CurrentUserProfile getCurrentUserProfile(Long userId);
 
     OtherUserProfile getOtherUserProfile(Long currentUserId, Long targetUserId);
+
+    List<OtherUserProfile> searchUsers(String keyword, Long userId);
 }

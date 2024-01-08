@@ -1,22 +1,22 @@
 <div class="header" id="site-header">
 
   <div class="page-title">
-    <h6>Newsfeed</h6>
+    <h6>{{pageTitle}}</h6>
   </div>
 
   <div class="header-content-wrapper">
-    <form class="search-bar w-search notification-list friend-requests">
+    <form class="search-bar w-search notification-list friend-requests" [formGroup]="searchForm" (ngSubmit)="toSearchPage()">
       <div class="form-group with-button">
-        <input class="form-control js-user-search" placeholder="Search here people or pages..." type="text">
-        <button>
+        <input class="form-control" placeholder="Search here people or pages..." type="text" formControlName = keyword>
+        <button type="submit">
           <svg class="olymp-magnifying-glass-icon">
             <use xlink:href="assets/svg-icons/sprites/icons.svg#olymp-magnifying-glass-icon"></use>
           </svg>
         </button>
       </div>
-    </form>
 
-    <a href="#" class="link-find-friend">Find Friends</a>
+    </form>
+    <a href="#" class="link-find-friend">Search </a>
 
     <div class="control-block">
 
@@ -515,7 +515,7 @@
         </div>
         <a href="02-ProfilePage.html" class="author-name fn">
           <div class="author-title">
-            {{(user.firstName != null && user.lastName != null) ? (user.firstName + " " + user.lastName).trim() : user.email }}
+            {{ (user?.firstName != null && user?.lastName != null) ? (user?.firstName + " " + user?.lastName).trim() : user?.email }}
             <svg class="olymp-dropdown-arrow-icon">
               <use xlink:href="assets/svg-icons/sprites/icons.svg#olymp-dropdown-arrow-icon"></use>
             </svg>

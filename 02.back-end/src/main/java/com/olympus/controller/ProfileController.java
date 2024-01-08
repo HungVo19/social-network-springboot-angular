@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,10 +29,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/v1/users/{userId}/profile")
+@RequestMapping("/v1/users")
 @CrossOrigin("*")
 @Tag(name = "3. Profile", description = "User's Profile Management APIs")
 @Validated
@@ -46,7 +48,7 @@ public class ProfileController {
         this.appValidator = validator;
     }
 
-    @GetMapping()
+    @GetMapping("/{userId}/profile")
     @Operation(summary = "Get user's profiles")
     @ApiResponses({
             @ApiResponse(responseCode = "200", content = {
@@ -65,11 +67,29 @@ public class ProfileController {
         }
         OtherUserProfile data = userService.getOtherUserProfile(loggedInUserId, userId);
         BaseResponse<OtherUserProfile, ?> response =
-                BaseResponse.success(HttpStatus.OK,  Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_PROFILE_GET, data);
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_PROFILE_GET, data);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @GetMapping("/search")
+    @Operation(summary = "Search user by name or email")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", content = {
+                    @Content(schema =
+                    @Schema(implementation = BaseResponse.class), mediaType = "application/json")})
+    })
+    ResponseEntity<?> searchUsers(@AuthenticationPrincipal UserDetails userDetails,
+                                  @RequestParam @Valid @NotBlank String keyword) {
+        Long loggedInUserId = userService.findIdByUserDetails(userDetails);
+        List<OtherUserProfile> data = userService.searchUsers(keyword, loggedInUserId);
+        BaseResponse<List<OtherUserProfile>, ?> response =
+                BaseResponse.success(HttpStatus.OK, Constant.MSG_SUCCESS, Constant.MSG_SUCCESS_PROFILE_GET, data);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
     @PutMapping(
+            value = "/{userId}/profile",
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE}
     )

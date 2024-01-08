@@ -1,28 +1,7 @@
 <!-- Nav tabs -->
 <ul class="nav nav-tabs" role="tablist">
   <li class="nav-item">
-
   </li>
-<!--  <li class="nav-item">-->
-<!--    <a class="nav-link inline-items" data-toggle="tab" href="#profile-1" role="tab" aria-expanded="false">-->
-
-<!--      <svg class="olymp-multimedia-icon">-->
-<!--        <use xlink:href="assets/svg-icons/sprites/icons.svg#olymp-multimedia-icon"></use>-->
-<!--      </svg>-->
-
-<!--      <span>Multimedia</span>-->
-<!--    </a>-->
-<!--  </li>-->
-
-<!--  <li class="nav-item">-->
-<!--    <a class="nav-link inline-items" data-toggle="tab" href="#blog" role="tab" aria-expanded="false">-->
-<!--      <svg class="olymp-blog-icon">-->
-<!--        <use xlink:href="assets/svg-icons/sprites/icons.svg#olymp-blog-icon"></use>-->
-<!--      </svg>-->
-
-<!--      <span>Blog Post</span>-->
-<!--    </a>-->
-<!--  </li>-->
 </ul>
 
 <a class="nav-link active inline-items" data-toggle="tab" href="#home-1" role="tab"
@@ -40,95 +19,42 @@
   <div class="tab-pane active" id="home-1" role="tabpanel" aria-expanded="true">
     <form [formGroup]="statusForm" (ngSubmit)="submitStatus()">
       <div class="post__author author vcard inline-items author-thumb">
-        <img src="{{user?.avatar?user.avatar : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0hxwLk9WbtPyfItymvpJ3fA7m13KIYF3sKDOy_YAXMqx2ZKRdwWDayxvScLqYNi7XsNg&usqp=CAU'}}" alt="author">
+        <img
+          src="{{user?.avatar?user.avatar : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0hxwLk9WbtPyfItymvpJ3fA7m13KIYF3sKDOy_YAXMqx2ZKRdwWDayxvScLqYNi7XsNg&usqp=CAU'}}"
+          alt="author">
       </div>
       <div class="form-group with-icon label-floating is-empty">
         <label class="control-label">Share what you are thinking here...</label>
         <textarea class="form-control" placeholder="" formControlName="content"></textarea>
       </div>
-      <div class="add-options-message">
-        <a href="#" class="options-message" data-toggle="tooltip" data-placement="top"   data-original-title="ADD PHOTOS">
-          <svg class="olymp-camera-icon" data-toggle="modal" data-target="#update-header-photo"><use xlink:href="assets/svg-icons/sprites/icons.svg#olymp-camera-icon"></use></svg>
-        </a>
-        <a href="#" class="options-message" data-toggle="tooltip" data-placement="top"   data-original-title="TAG YOUR FRIENDS">
-          <svg class="olymp-computer-icon"><use xlink:href="assets/svg-icons/sprites/icons.svg#olymp-computer-icon"></use></svg>
-        </a>
-
-        <a href="#" class="options-message" data-toggle="tooltip" data-placement="top"   data-original-title="ADD LOCATION">
-          <svg class="olymp-small-pin-icon"><use xlink:href="assets/svg-icons/sprites/icons.svg#olymp-small-pin-icon"></use></svg>
-        </a>
-
-        <button type="submit" class="btn btn-primary btn-md-2">Post Status</button>
-        <button class="btn btn-md-2 btn-border-think btn-transparent c-grey">Preview</button>
-
+      <div *ngIf="images.length != 0">
+        <app-post-images [images]="images"></app-post-images>
       </div>
-
+      <div class="add-options-message">
+        <a href="javascript:void(0)" class="options-message" data-toggle="tooltip" data-placement="top"
+           data-original-title="ADD PHOTOS">
+          <svg class="olymp-camera-icon" data-toggle="modal" data-target="#update-header-photo">
+            <use xlink:href="assets/svg-icons/sprites/icons.svg#olymp-camera-icon"></use>
+          </svg>
+        </a>
+        <a href="javascript:void(0)" class="options-message" data-toggle="tooltip" data-placement="top"
+           data-original-title="WHO CAN SEE YOUR POST">
+          <svg class="olymp-thunder-icon" data-toggle="modal" data-target="#update-post-privacy">
+            <use xlink:href="assets/svg-icons/sprites/icons.svg#olymp-thunder-icon"></use>
+          </svg>
+        </a>
+        <button type="submit" class="btn btn-primary btn-md-2">Post Status</button>
+        <button class="btn btn-md-2 btn-border-think btn-transparent c-grey" type="reset" (click)="clearForm()">Clear
+        </button>
+      </div>
     </form>
   </div>
-
-<!--  <div class="tab-pane" id="profile-1" role="tabpanel" aria-expanded="true">-->
-<!--    <form>-->
-<!--      <div class="author-thumb">-->
-<!--        <img src="assets/img/author-page.jpg" alt="author">-->
-<!--      </div>-->
-<!--      <div class="form-group with-icon label-floating is-empty">-->
-<!--        <label class="control-label">Share what you are thinking here...</label>-->
-<!--        <textarea class="form-control" placeholder=""  ></textarea>-->
-<!--      </div>-->
-<!--      <div class="add-options-message">-->
-<!--        <a href="#" class="options-message" data-toggle="tooltip" data-placement="top"   data-original-title="ADD PHOTOS">-->
-<!--          <svg class="olymp-camera-icon" data-toggle="modal" data-target="#update-header-photo"><use xlink:href="svg-icons/sprites/icons.svg#olymp-camera-icon"></use></svg>-->
-<!--        </a>-->
-<!--        <a href="#" class="options-message" data-toggle="tooltip" data-placement="top"   data-original-title="TAG YOUR FRIENDS">-->
-<!--          <svg class="olymp-computer-icon"><use xlink:href="svg-icons/sprites/icons.svg#olymp-computer-icon"></use></svg>-->
-<!--        </a>-->
-
-<!--        <a href="#" class="options-message" data-toggle="tooltip" data-placement="top"   data-original-title="ADD LOCATION">-->
-<!--          <svg class="olymp-small-pin-icon"><use xlink:href="svg-icons/sprites/icons.svg#olymp-small-pin-icon"></use></svg>-->
-<!--        </a>-->
-
-<!--        <button class="btn btn-primary btn-md-2">Post Status</button>-->
-<!--        <button   class="btn btn-md-2 btn-border-think btn-transparent c-grey">Preview</button>-->
-
-<!--      </div>-->
-
-<!--    </form>-->
-<!--  </div>-->
-
-<!--  <div class="tab-pane" id="blog" role="tabpanel" aria-expanded="true">-->
-<!--    <form [formGroup]="statusForm" (ngSubmit)="submitStatus()">-->
-<!--      <div class="author-thumb">-->
-<!--        <img src="{{user.avatar?user.avatar : 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0hxwLk9WbtPyfItymvpJ3fA7m13KIYF3sKDOy_YAXMqx2ZKRdwWDayxvScLqYNi7XsNg&usqp=CAU'}}" alt="author">-->
-<!--      </div>-->
-<!--      <div class="form-group with-icon label-floating is-empty">-->
-<!--        <label class="control-label">Share what you are thinking here...</label>-->
-<!--        <textarea class="form-control" placeholder=""  formControlName="content"></textarea>-->
-<!--      </div>-->
-<!--      <div class="add-options-message">-->
-<!--        <a href="#" class="options-message" data-toggle="tooltip" data-placement="top"   data-original-title="ADD PHOTOS">-->
-<!--          <svg class="olymp-camera-icon" data-toggle="modal" data-target="#update-header-photo"><use xlink:href="svg-icons/sprites/icons.svg#olymp-camera-icon"></use></svg>-->
-<!--        </a>-->
-<!--        <a href="#" class="options-message" data-toggle="tooltip" data-placement="top"   data-original-title="TAG YOUR FRIENDS">-->
-<!--          <svg class="olymp-computer-icon"><use xlink:href="svg-icons/sprites/icons.svg#olymp-computer-icon"></use></svg>-->
-<!--        </a>-->
-
-<!--        <a href="#" class="options-message" data-toggle="tooltip" data-placement="top"   data-original-title="ADD LOCATION">-->
-<!--          <svg class="olymp-small-pin-icon"><use xlink:href="svg-icons/sprites/icons.svg#olymp-small-pin-icon"></use></svg>-->
-<!--        </a>-->
-
-<!--        <button type= submit class="btn btn-primary btn-md-2">Post Status</button>-->
-<!--        <button class="btn btn-md-2 btn-border-think btn-transparent c-grey">Preview</button>-->
-
-<!--      </div>-->
-
-<!--    </form>-->
-<!--  </div>-->
 </div>
 
 <!-- Window-popup Update Header Photo -->
 
 <div class="modal fade" id="update-header-photo" tabindex="-1" role="dialog" aria-labelledby="update-header-photo"
-     aria-hidden="true">
+     aria-hidden="true" #modalUploadImages>
   <div class="modal-dialog window-popup update-header-photo" role="document">
     <div class="modal-content">
       <a href="#" class="close icon-close" data-dismiss="modal" aria-label="Close">
@@ -358,3 +284,31 @@
 </div>
 
 <!-- ... end Window-popup Choose from my Photo -->
+
+<!-- Window-popup Change Post Privacy -->
+<div class="modal fade" id="update-post-privacy" tabindex="-1" role="dialog" aria-labelledby="post-privacy"
+     aria-hidden="true">
+  <div class="modal-dialog window-popup create-event" role="document">
+    <div class="modal-content">
+      <a href="javascript:void(0)" class="close icon-close" data-dismiss="modal" aria-label="Close">
+        <svg class="olymp-close-icon">
+          <use xlink:href="assets/svg-icons/sprites/icons.svg#olymp-close-icon"></use>
+        </svg>
+      </a>
+      <div class="modal-header">
+        <h6 class="title">Who can see your post</h6>
+      </div>
+      <div class="modal-body">
+        <div class="form-group label-floating is-select">
+          <label class="control-label">Privacy</label>
+          <select class="form-select">
+            <option value = "PUBLIC">PUBLIC</option>
+            <option value = "FRIENDS">FRIENDS</option>
+            <option value = "PRIVATE">PRIVATE</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ... end Window-popup Change Post Privacy -->

@@ -1,7 +1,5 @@
 import {Component, Input} from '@angular/core';
-import {BeforeSlideDetail} from "lightgallery/lg-events";
-import lgZoom from 'lightgallery/plugins/zoom';
-
+import {NgxMasonryOptions} from "ngx-masonry";
 
 @Component({
   selector: 'app-post-images',
@@ -10,21 +8,10 @@ import lgZoom from 'lightgallery/plugins/zoom';
 })
 export class PostImagesComponent {
   @Input() images!: any;
-
-  settings = {
-    counter: false,
-    thumbnail: true,
-    animateThumb: false,
-    showThumbByDefault: false,
-    plugins: [lgZoom]
+  masonryOptions: NgxMasonryOptions = {
+    originLeft: true,
+    resize: true,
+    originTop:true,
   };
 
-  gallery = {
-    // Gallery settings like plugins if any
-  };
-
-  onBeforeSlide = (detail: BeforeSlideDetail): void => {
-    const {index, prevIndex} = detail;
-    console.log(index, prevIndex);
-  };
 }

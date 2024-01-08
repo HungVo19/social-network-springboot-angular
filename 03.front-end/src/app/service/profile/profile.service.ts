@@ -13,4 +13,8 @@ export class ProfileService {
   getCurrentUser(id:any){
     return this.httpClient.get<any>(AppConstants.BASE_URL_API + `/v1/users/${id}/profile`)
   }
+
+  searchUsers(keyword:any) {
+    return this.httpClient.get<any>(AppConstants.BASE_URL_API + `/v1/users/search?keyword=${keyword}`)
+  }
 }

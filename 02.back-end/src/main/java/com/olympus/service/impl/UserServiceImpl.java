@@ -28,6 +28,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -155,5 +158,33 @@ public class UserServiceImpl implements IUserService {
         profile.setFriendship(friendship);
         profile.setFriendRequest(friendRequest);
         return profile;
+    }
+
+    @Override
+    public List<OtherUserProfile> searchUsers(String keyword, Long userId) {
+        List<User> users = userRepository.findByFirstNameContainingOrLastNameContainingOrEmailContaining(keyword, keyword, keyword);
+        List<User> filteredUsers = users.stream().filter(u -> !Objects.equals(u.getId(), userId)).toList();
+        List<OtherUserProfile> searchResult = new ArrayList<>();
+        for (User u : filteredUsers) {
+            Long targetUserId = u.getId();
+            OtherUserFriendship friendship = new OtherUserFriendship();
+            OtherUserFriendRequest friendRequest = new OtherUserFriendRequest();
+            if (friendshipService.existsFriendship(userId, u.getId())) {
+                Friendship existedFriendship = friendshipService.findByUserIds(userId, targetUserId);
+                friendship.setFriendshipId(existedFriendship.getId());
+                friendship.setStatus(true);
+            }
+            FriendRequest existedFriendRequest = friendRequestService.findByUserIds(userId, targetUserId);
+            if (existedFriendRequest != null) {
+                friendRequest.setRequestId(existedFriendRequest.getId());
+                friendRequest.setStatus(true);
+                friendRequest.setRole(friendRequestService.identifyRole(userId, targetUserId));
+            }
+            OtherUserProfile profile = otherUserProfileMapper.toDTO(u);
+            profile.setFriendship(friendship);
+            profile.setFriendRequest(friendRequest);
+            searchResult.add(profile);
+        }
+        return searchResult;
     }
 }

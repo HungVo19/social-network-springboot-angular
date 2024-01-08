@@ -6,11 +6,13 @@ import {ResetPasswordComponent} from "./features/account/reset-password/reset-pa
 import {NewsfeedComponent} from "./features/newsfeed/newsfeed.component";
 import {LoginRegisterComponent} from "./features/account/login-register/login-register.component";
 import {AuthorizeGuard} from "./features/shared/auth/Authorize.guard";
-import {PersonalPostsComponent} from "./personal-posts/personal-posts.component";
+import {PersonalPostsComponent} from "./features/personal-posts/personal-posts.component";
+import {SearchResultComponent} from "./features/search-result/search-result.component";
 
 const routes: Routes = [
   {path: 'newsfeed', component: NewsfeedComponent, canActivate: [AuthorizeGuard]},
   {path: 'personal-post', component: PersonalPostsComponent, canActivate: [AuthorizeGuard]},
+  {path: 'search-result', component: SearchResultComponent, canActivate: [AuthorizeGuard]},
   {path: '', redirectTo: 'newsfeed', pathMatch: 'full'},
   {path: 'home', redirectTo: 'newsfeed', pathMatch: 'full'},
   {path: 'forgot-password', component: ForgotPasswordComponent},

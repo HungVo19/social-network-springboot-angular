@@ -1,4 +1,4 @@
-import {Component, ElementRef, OnInit} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, OnInit} from '@angular/core';
 import {Router} from "@angular/router";
 import {TokenUtils} from "./features/shared/utils/token.utils";
 import {WebsocketService} from "./service/websocket/websocket.service";
@@ -9,7 +9,7 @@ import {SweetAlertService} from "./service/alert/sweet-alert.service";
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, AfterViewInit {
   title = '03.front-end';
   userId!: any;
 
@@ -240,7 +240,9 @@ export class AppComponent implements OnInit {
   private notifyNewsfeedUpdate() {
     const topic = `/topic/user.${this.userId}.newPost`;
     this.websocketService.subscribeToTopic(topic, (message) => {
-      this.alertService.success("Newsfeed Updated");
+      if (this.userId != message.userId) {
+        this.alertService.success("Newsfeed Updated");
+      }
     }).then(() => {
     })
   }

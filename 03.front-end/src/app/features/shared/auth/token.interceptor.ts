@@ -39,19 +39,20 @@ export class AuthInterceptorService implements HttpInterceptor {
 
     //Redirect HTTP Status Error
     return next.handle(request)
-    //   .pipe(
-    //   catchError((error: HttpErrorResponse) => {
-    //     if (error.status == 0) {
-    //       this.router.navigate(['/error']);
-    //     }
-    //     if (error.status >= 500 && error.status <= 599) {
-    //       this.router.navigateByUrl("/error")
-    //     } else if (error.status == 401 || error.status == 403) {
-    //       this.router.navigate(['/login'])
-    //     }
-    //     throw error;
-    //   })
-    // );
+      .pipe(
+      catchError((error: HttpErrorResponse) => {
+        // if(error.error.code == 500 && error.error.error == "Bad credentials") {
+        //   throw error;
+        // }
+        // else
+          if (error.status >= 500 && error.status <= 599) {
+          this.router.navigateByUrl("/error").then(r => {})
+        } else if (error.status == 401 || error.status == 403) {
+          this.router.navigate(['/login']).then(r => {})
+        }
+        throw error;
+      })
+    );
   }
 
   private addContentType(request: HttpRequest<any>, contentType: string) {

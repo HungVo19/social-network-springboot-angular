@@ -32,4 +32,8 @@ export class PostService {
   getUserPosts(id:any) {
     return this.httpClient.get<any>(AppConstants.BASE_URL_API + `/v1/users/${id}/posts`)
   }
+
+  deletePost(userId:any, postId:any) {
+    return this.httpClient.delete<any>(AppConstants.BASE_URL_API + `/v1/users/${userId}/posts/${postId}`)
+  }
 }
